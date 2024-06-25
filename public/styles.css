@@ -1,0 +1,22 @@
+ div {
+    border : 1px solid red;
+ }
+
+ html, body {
+    height: 100%; /* Ensures that the HTML and body take full height of the viewport */
+    margin: 0; /* Removes default margin */
+}
+
+.full-height {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.flex-fill {
+    flex: 1; /* Takes up all available space */
+}
+
+.overflow-auto {
+    overflow-y: auto; /* Adds scroll to only vertical overflow */
+}
