@@ -12,11 +12,3 @@
     flex-direction: column;
     height: 100%;
 }
-
-.flex-fill {
-    flex: 1; /* Takes up all available space */
-}
-
-.overflow-auto {
-    overflow-y: auto; /* Adds scroll to only vertical overflow */
-}
