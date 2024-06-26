@@ -3,17 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="login.css">
     <title>Document</title>
 </head>
 <body>
 
-    <div>
-        <form id="usernameForm">
-            <p id="namePlace"></p>
-            <input type="text" id="usernameInput" placeholder="Your Username here...." required>
-            <button id="userReg">Register Username</button>
-        </form>
+    <div class="container">
+        <div class="login">
+            <h3>Already have an account?</h3>
+            <form id="LoginForm">
+                <input type="text" id="usernameInput" placeholder="Your Username here...." required>
+                <input type="text" id="usernameInput" placeholder="Password" required>
+                <button id="userReg">login</button>
+            </form>
+        </div>
+        <div class="register">
+            <h3>Create an account here</h3>
+            <form id="RegisterForm">
+                <input type="text" id="usernameInput" placeholder="Your Username here...." required>
+                <input type="text" id="usernameInput" placeholder="Create Password" required>
+                <input type="text" id="usernameInput" placeholder="Emails" required>
+                <button id="userReg">Register Username</button>
+            </form>
+        </div>
+        
+        
     </div>
-    
+
+    <script src="login.js"></script>
 </body>
 </html>
