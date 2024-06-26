@@ -1,35 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <title>Document</title>
 </head>
+
 <body>
 
     <div class="container">
-        <div class="login">
-            <h3>Already have an account?</h3>
-            <form id="LoginForm">
-                <input type="text" id="usernameInput" placeholder="Your Username here...." required>
-                <input type="text" id="usernameInput" placeholder="Password" required>
-                <button id="userReg">login</button>
-            </form>
+        <div class="login border">
+            <div class="login-show" id="login-show" style="display: block;">
+                <h2>Welcome Back</h2>
+                <form id="LoginForm" class="login-flex">
+                    <input type="text" id="usernameInput" placeholder="Your Username here...." required>
+                    <input type="text" id="usernameInput" placeholder="Password" required>
+                    <button id="userReg">login <i class="fa-solid fa-hands"></i></button>
+                </form>
+            </div>
+            <div class="login-hidden" style="display: none;" id="login-hidden">
+                <h2>Already have an account?</h2>
+                <button id="BtnLogin">Sign in <i class="fa-solid fa-angles-right"></i></button>
+            </div>
+
         </div>
-        <div class="register">
-            <h3>Create an account here</h3>
-            <form id="RegisterForm">
-                <input type="text" id="usernameInput" placeholder="Your Username here...." required>
-                <input type="text" id="usernameInput" placeholder="Create Password" required>
-                <input type="text" id="usernameInput" placeholder="Emails" required>
-                <button id="userReg">Register Username</button>
-            </form>
+
+        <div class="register border">
+            <div class="reg-show" id="reg-show" style="display: none;">
+                <h2>Create an account here</h2>
+                <form id="RegisterForm" class="reg-flex">
+                    <input type="text" id="usernameInput" placeholder="Your Username here...." required>
+                    <input type="text" id="usernameInput" placeholder="Create Password" required>
+                    <input type="text" id="usernameInput" placeholder="Emails" required>
+                    <button id="switch-reg">Register Username <i class="fa-solid fa-address-card"></i></button>
+                </form>
+            </div>
+            <div class="reg-hidden" id="reg-hidden" style="display: block;">
+                <h2>New to here? Get your account</h2>
+                <button id="BtnReg"><i class="fa-solid fa-angles-left"></i> Create for free</button>
+            </div>
         </div>
-        
-        
+
+
     </div>
 
     <script src="login.js"></script>
 </body>
+
 </html>
