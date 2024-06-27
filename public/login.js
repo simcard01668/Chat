@@ -1,20 +1,23 @@
-const BtnReg =  document.getElementById('BtnReg');
-const BtnLogin =  document.getElementById('BtnLogin');
-const regHidden = document.getElementById('reg-hidden')
-const regShow = document.getElementById('reg-show')
-const loginHidden = document.getElementById('login-hidden')
-const loginShow = document.getElementById('login-show')
+const BtnReg = document.getElementById('BtnReg');
+const BtnLogin = document.getElementById('BtnLogin');
+const regToggle = document.querySelector('.reg-toggle');
+const loginToggle = document.querySelector('.login-toggle');
+const toggleContainer = document.querySelector('.toggle-container');
+const loginMain = document.querySelector('.login-main');
+const reg = document.querySelector('.reg');
 
 BtnReg.addEventListener('click', () => {
-    loginHidden.style.display = 'block';
-    loginShow.style.display = 'none';
-     regShow.style.display = 'block'
-     regHidden.style.display = 'none'
+    toggleContainer.classList.add('active');
+    regToggle.classList.add('hidden');
+    loginToggle.classList.remove('hidden');
+    loginMain.classList.add('active');
+    reg.classList.add('active');
 });
 
 BtnLogin.addEventListener('click', () => {
-    loginHidden.style.display = 'none';
-    loginShow.style.display = 'block';
-     regShow.style.display = 'none'
-     regHidden.style.display = 'block'
+    toggleContainer.classList.remove('active');
+    regToggle.classList.remove('hidden');
+    loginToggle.classList.add('hidden');
+    loginMain.classList.remove('active');
+    reg.classList.remove('active');
 });
