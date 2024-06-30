@@ -11,14 +11,10 @@ const io = socketIo(server, {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/main', express.static(path.join(__dirname, 'main')));
-
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-app.get('/main', (req, res) => {
-    res.sendFile(path.join(__dirname, 'main', 'index.html'));
-});
+
 
 
 //User name registration
@@ -58,27 +54,11 @@ io.on('connection', (socket) => {
                 username: socket.username,
                 message: msg
             };
-            io.emit('chat message', messageData);
+            socket.emit('chat message', {...messageData, isSelf: true});
+            socket.broadcast.emit('chat message', {...messageData, isSelf: false});
     } else {
         socket.emit('message reject', 'You are not logged in, please log in first.');
     }});
-
-
-
-
-    //     msg, regUsers[username]) => {
-    //     // Assume 'socket.username' stores the username of the connected client
-    //     console.log(`Received message from ${regUsers[username]}: ${msg}`);
-    //     if (socket.username) {
-    //         const messageData = {
-    //             username: socket.username,
-    //             message: msg
-    //         };
-    //         io.emit('chat message', messageData);  // Emit the structured object
-    //     } else {
-    //         console.log('Error: Username not set for the message received');
-    //     }
-    // });
 
     // -------------------------------------------------------------
     //handle disconnection event

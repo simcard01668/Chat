@@ -1,8 +1,61 @@
-import { messageForm, messageInput, messagesContainer, clearBtn, chatWindow, usernameInput, userReg, userList, namePlace, imageInput, currentUser } from './modules/config.js'
+import { messageForm, messageInput, messagesContainer, clearBtn, chatWindow, usernameInput, userReg, userList, namePlace, imageInput, currentUser } from './config/config.js'
 
 document.addEventListener('DOMContentLoaded', () => {
-    const socket = io();
 
+    // --------------------------------------------------------
+    // declare socket and event listeners
+    const socket = io();
+    const BtnReg = document.getElementById('BtnReg');
+    const BtnLogin = document.getElementById('BtnLogin');
+    const regToggle = document.querySelector('.reg-toggle');
+    const loginToggle = document.querySelector('.login-toggle');
+    const toggleContainer = document.querySelector('.toggle-container');
+    const loginMain = document.querySelector('.login-main');
+    const reg = document.querySelector('.reg');
+    const loginPage = document.querySelector('#login-page');
+
+    // -----------------------------------------------------------
+    //button interaction
+    BtnReg.addEventListener('click', () => {
+        toggleContainer.classList.add('active');
+        regToggle.classList.add('hidden');
+        loginToggle.classList.remove('hidden');
+        loginMain.classList.add('active');
+        reg.classList.add('active');
+    });
+
+    BtnLogin.addEventListener('click', () => {
+        toggleContainer.classList.remove('active');
+        regToggle.classList.remove('hidden');
+        loginToggle.classList.add('hidden');
+        loginMain.classList.remove('active');
+        reg.classList.remove('active');
+    });
+
+    // --------------------------------------------------------
+    //user registration: submit username to server
+    document.getElementById('userReg').addEventListener('click', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('usernameRegInput').value;
+        const password = document.getElementById('userRegPassword').value;
+        const email = document.getElementById('userEmail').value;
+        const regData = {
+            username: username,
+            password: password,
+            email: email
+        }
+        socket.emit('register username', regData);
+    });
+
+    //user registration: reject from server
+    socket.on('username rejected', function (message) {
+        alert(message);  // Optionally alert the user that the username is taken
+    });
+
+    socket.on('username accepted', function(username) {
+        alert(`You are now registrated and logged in as ${username}!`);
+        loginPage.classList.add('hidden');
+    });
 
     // --------------------------------------------------------
     // send message function
@@ -19,30 +72,44 @@ document.addEventListener('DOMContentLoaded', () => {
     //listen to message from server and appending to chat
     socket.on('chat message', function (data) {
         const item = document.createElement('div');
-
         const usernameSpan = document.createElement('span');
         usernameSpan.style.fontWeight = 'bold';
-        usernameSpan.textContent = `${data.username}: `;
-
+        
         const messageSpan = document.createElement('span');
         messageSpan.textContent = data.message;
         messageSpan.style.display = 'inline';
 
-        item.appendChild(usernameSpan);
-        item.appendChild(messageSpan);
+        item.classList.add('message-container');
 
+
+        if (data.isSelf) {
+            item.style.alignSelf = 'flex-end'; // Moves self messages to the right
+            usernameSpan.textContent = `You: `;
+            item.appendChild(usernameSpan);
+            item.appendChild(messageSpan);
+        } else {
+            item.style.alignSelf = 'flex-start'; // Keeps other messages on the left
+            usernameSpan.textContent = `${data.username}: `;
+            item.appendChild(usernameSpan);
+            item.appendChild(messageSpan);
+        }
+        
+        messagesContainer.appendChild(item);
+        messagesContainer.style='align-items: flex-end;';
         console.log('Received:', data);
         socket.emit('userTyping', { username: currentUser, isTyping: false });
-        messagesContainer.appendChild(item);
-
-        window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom of the chat
-        document.getElementById('chat').scrollTo(0, document.body.scrollHeight); // Scroll to the bottom of the chat
+        // messagesContainer.appendChild(item);
+        if(messagesContainer.firstChild){
+            messagesContainer.insertBefore(item, messagesContainer.firstChild);
+        } else {
+            messagesContainer.appendChild(item);
+        }
     });
 
     //reject message if not logged in
     socket.on('message reject', function (message){
         alert(message);
-        // window.location.href = '/';
+        loginPage.classList.remove('hidden');
     })
 
     // ------------------------------------------------------

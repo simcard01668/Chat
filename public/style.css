@@ -1,0 +1,46 @@
+.container-border {
+    border : 2px solid rgb(0, 0, 0);
+ }
+
+ html, body {
+    height: 100%; /* Ensures that the HTML and body take full height of the viewport */
+    margin: 0; /* Removes default margin */
+}
+
+.full-height {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.middle-container {
+    height: 71vh;
+    overflow: auto;
+}
+
+#message {
+    width: 60%;
+}
+
+#imageInput {
+    display: none;
+}
+
+#chat{
+    display: flex;
+    flex-direction: column-reverse;
+    height: 100%;
+    overflow-wrap: break-word;
+}
+
+.message-container {
+    background-color: white;
+    border-radius: 10px;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 5px;
+    display: inline-block;
+    max-width: 70%;
+    min-width: 10%;
+}
