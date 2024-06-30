@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     messageForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        console.log('submitted message')
         if (messageInput.value) {
             socket.emit('chat message', messageInput.value);
             messageInput.value = '';
@@ -37,6 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo(0, document.body.scrollHeight); // Scroll to the bottom of the chat
         document.getElementById('chat').scrollTo(0, document.body.scrollHeight); // Scroll to the bottom of the chat
     });
+
+    //reject message if not logged in
+    socket.on('message reject', function (message){
+        alert(message);
+        // window.location.href = '/';
+    })
 
     // ------------------------------------------------------
     // send image function
@@ -80,31 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // -------------------------------------------------------------------------
-    // user registration function
-
-    //user registration: submit username to server
-    document.getElementById('usernameForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        const username = document.getElementById('usernameInput').value;
-        socket.emit('register username', username);
-    });
-
-    //user registration: response from server
-    socket.on('username accepted', function (username) {
-        chatWindow.classList.remove('hidden');  // Show the chat window
-        usernameInput.classList.add('hidden');          // Disable the username input
-        userReg.disabled = true;          // Disable the submit button
-        userReg.classList.add('hidden')
-
-        namePlace.innerHTML = `Your username is: ${username}`;
-        currentUser = username;
-    });
-
-    //user registration: reject from server
-    socket.on('username rejected', function (message) {
-        alert(message);  // Optionally alert the user that the username is taken
-    });
-
     // user registration: update active user
     socket.on('update user list', function (users) {
         userList.innerHTML = ''; //clear the list

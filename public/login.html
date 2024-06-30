@@ -18,9 +18,9 @@
             <div class="login-main">
                 <h2>Welcome Back</h2>
                 <form id="LoginForm">
-                    <input type="text" id="usernameInput" placeholder="Your Username here...." required>
-                    <input type="text" id="usernameInput" placeholder="Password" required>
-                    <button id="userReg">login <i class="fa-solid fa-hands"></i></button>
+                    <input type="text" id="usernameInput" placeholder="Your Username here...." required autocomplete="username">
+                    <input type="password" id="userPassword" placeholder="Password" required autocomplete="current-password">
+                    <button id="userLogin">login <i class="fa-solid fa-hands"></i></button>
                 </form>
             </div>
         </div>
@@ -29,10 +29,10 @@
             <div class="reg" id="reg">
                 <h2>Create an account here</h2>
                 <form id="RegisterForm">
-                    <input type="text" id="usernameInput" placeholder="Your Username here...." required>
-                    <input type="text" id="usernameInput" placeholder="Create Password" required>
-                    <input type="text" id="usernameInput" placeholder="Emails" required>
-                    <button id="switch-reg">Register Username <i class="fa-solid fa-address-card"></i></button>
+                    <input type="text" id="usernameRegInput" placeholder="Your Username here...." required autocomplete="username">
+                    <input type="password" id="userRegPassword" placeholder="Create Password" required autocomplete="new-password">
+                    <input type="email" id="userEmail" placeholder="Emails" required autocomplete="email">
+                    <button id="userReg">Register Username <i class="fa-solid fa-address-card"></i></button>
                 </form>
             </div>
         </div>
@@ -54,6 +54,7 @@
     </div>
 
     <script src="login.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </body>
 
 </html>
