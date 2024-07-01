@@ -19,13 +19,13 @@ app.get('/', (req, res) => {
 
 //User name registration
 let regUsers = {};
+let onlineUsers = {};
 
 io.on('connection', (socket) => {
     console.log('A new user has connected');
         // ------------------------------------------------------------
     // Register username for new connections
     socket.on('register username', (regData) => {
-        console.log(regData);
          const { username, password, email } = regData;
          if (regUsers.hasOwnProperty(username)) {
              socket.emit('username rejected', 'Username is already taken, please try another one.');
@@ -36,13 +36,40 @@ io.on('connection', (socket) => {
              password: password,
              email: email,
          };
+
+         onlineUsers[username] = {
+                socketId: socket.id,
+                username: username
+         }
+
          socket.username = username;
-         console.log(socket.username);
-         socket.emit('username accepted', username, socket.username);
-         console.log(`Username registered and set: ${socket.username}`);
-         //display connected users
-         console.log(regUsers);
+         socket.emit('username accepted', username);
+         socket.emit('user connected', {username: socket.username, isSelf: true});
+         socket.broadcast.emit('user connected', {username: socket.username, isSelf: false});
+
+         console.log(onlineUsers);
+        //  console.log(`Username registered and set: ${socket.username}`);
+        //  console.log(regUsers);
      });
+
+     socket.on('login', (loginData) => {
+        const {username, password} = loginData;
+        if (regUsers.hasOwnProperty(username) && regUsers[username].password === password){
+            socket.username = username;
+            socket.emit('username accepted', username);
+            socket.emit('user connected', {username: socket.username, isSelf: true});
+
+            onlineUsers[username] = {
+                socketId: socket.id,
+                username: username
+         }
+
+         console.log(onlineUsers);
+        }
+        else {
+            socket.emit('username rejected', 'Invalid username or password');
+        }
+    });
 
     // -------------------------------------------------------------
     //send message functions
@@ -64,7 +91,9 @@ io.on('connection', (socket) => {
     //handle disconnection event
     socket.on('disconnect', () => {
         console.log('A user has disconnected');
-
+        socket.broadcast.emit('user disconnected', {username: socket.username});
+        delete onlineUsers[socket.username];
+        console.log(onlineUsers);
     })
 
     // --------------------------------------------------------------

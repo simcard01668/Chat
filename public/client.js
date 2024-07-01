@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginMain = document.querySelector('.login-main');
     const reg = document.querySelector('.reg');
     const loginPage = document.querySelector('#login-page');
+    const chatContainer = document.querySelector('.chat-container');
+    const profile = document.querySelector('.profile');
+    const usernameInput = document.getElementById('usernameInput');
+    const userPassword = document.getElementById('userPassword');
 
     // -----------------------------------------------------------
     //button interaction
@@ -53,9 +57,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('username accepted', function(username) {
-        alert(`You are now registrated and logged in as ${username}!`);
+        alert(`You are now logged in as ${username}!`);
         loginPage.classList.add('hidden');
+        profile.innerHTML = `Welcome ${username}!`;
     });
+
+    // --------------------------------------------------------
+    //user login: submit username to server
+    document.getElementById('userLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('usernameInput').value;
+        const password = document.getElementById('userPassword').value;
+        const loginData = {
+            username: username,
+            password: password
+        }
+        socket.emit('login', loginData);
+    })
+    // --------------------------------------------------------
+    //alert new user connection
+    socket.on('user connected', function (data) {
+        const item = document.createElement('div');
+        const usernameSpan = document.createElement('span');
+        usernameSpan.style.fontWeight = 'bold';
+        const messageSpan = document.createElement('span');
+        messageSpan.style.display = 'inline';
+        item.classList.add('message-container');
+
+
+        if (data.isSelf) {
+            item.style.alignSelf = 'center'; 
+            usernameSpan.textContent = `You: `;
+            messageSpan.textContent = 'have joint the chat';
+            item.appendChild(usernameSpan);
+            item.appendChild(messageSpan);
+        } else {
+            item.style.alignSelf = 'center'; 
+            usernameSpan.textContent = `${data.username}: `;
+            messageSpan.textContent = 'has joint the chat';
+            item.appendChild(usernameSpan);
+            item.appendChild(messageSpan);
+        }
+        
+        setTimeout(() => {
+        if(messagesContainer.firstChild){
+            messagesContainer.insertBefore(item, messagesContainer.firstChild);
+        } else {
+            messagesContainer.appendChild(item);
+        }}, 2000);
+    });
+
+    //----------------------------------------------------------------
+    // User disconnect event
+    socket.on('user disconnected', (data) => {
+        const item = document.createElement('div');
+        const usernameSpan = document.createElement('span');
+        usernameSpan.style.fontWeight = 'bold';
+        const messageSpan = document.createElement('span');
+        messageSpan.style.display = 'inline';
+        item.classList.add('message-container');
+        item.style.alignSelf = 'center'; 
+        usernameSpan.textContent = `${data.username}: `;
+        messageSpan.textContent = 'has left the chat';
+        item.appendChild(usernameSpan);
+        item.appendChild(messageSpan);
+        
+        setTimeout(() => {
+        if(messagesContainer.firstChild){
+            messagesContainer.insertBefore(item, messagesContainer.firstChild);
+        } else {
+            messagesContainer.appendChild(item);
+        }}, 2000);
+    })
+    //----------------------------------------------------------------
+    // User count event
 
     // --------------------------------------------------------
     // send message function
@@ -93,12 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(usernameSpan);
             item.appendChild(messageSpan);
         }
-        
-        messagesContainer.appendChild(item);
-        messagesContainer.style='align-items: flex-end;';
-        console.log('Received:', data);
-        socket.emit('userTyping', { username: currentUser, isTyping: false });
-        // messagesContainer.appendChild(item);
+      
+        // socket.emit('userTyping', { username: currentUser, isTyping: false });
         if(messagesContainer.firstChild){
             messagesContainer.insertBefore(item, messagesContainer.firstChild);
         } else {
@@ -167,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })
 
+    
     // ------------------------------------------------------------------------------
     // typing event function
 

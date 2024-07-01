@@ -23,7 +23,7 @@
             <div class="login-main">
                 <h2>Welcome Back</h2>
                 <form id="LoginForm">
-                    <input class="input-login" type="text" id="usernameInput" placeholder="Your Username here...." required autocomplete="username">
+                    <input class="input-login" type="text" id="usernameInput" maxlength="10" placeholder="Your Username here...." required autocomplete="username">
                     <input class="input-login" type="password" id="userPassword" placeholder="Password" required autocomplete="current-password">
                     <button class="button-login" id="userLogin">login <i class="fa-solid fa-hands"></i></button>
                 </form>
@@ -34,7 +34,7 @@
             <div class="reg" id="reg">
                 <h2>Create an account here</h2>
                 <form id="RegisterForm">
-                    <input class="input-login" type="text" id="usernameRegInput" placeholder="Your Username here...." required autocomplete="username">
+                    <input class="input-login" type="text" id="usernameRegInput" maxlength="10" placeholder="Your Username here...." required autocomplete="username">
                     <input class="input-login" type="password" id="userRegPassword" placeholder="Create Password" required autocomplete="new-password">
                     <input class="input-login" type="email" id="userEmail" placeholder="Emails" required autocomplete="email">
                     <button class="button-login" id="userReg">Register Username <i class="fa-solid fa-address-card"></i></button>
@@ -78,15 +78,15 @@
                     <ul id="userList"></ul>
                 </div>
             </div>
-            <div class="col-9 container-border">
-                <div id="chat">Type to start chatting</div>
+            <div class="col-9 container-border ">
+                <div id="chat" class="chat-container">Type to start chatting</div>
             </div>
         </div>
 
         <!-- -------------------------------------------
         bottom -->
         <div class="row" style="flex-grow: 2;">
-            <div class="col-3 container-border">user profile</div>
+            <div class="col-3 container-border profile">user profile</div>
             <div class="col-9 container-border">
                 <div id="type"></div>
                 <form id="message-form">
