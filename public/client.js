@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profile = document.querySelector('.profile');
     const usernameInput = document.getElementById('usernameInput');
     const userPassword = document.getElementById('userPassword');
+    const userCount = document.querySelector('.userCount');
 
     // -----------------------------------------------------------
     //button interaction
@@ -131,7 +132,9 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     //----------------------------------------------------------------
     // User count event
-
+    socket.on('user count', (data) => {
+        profile.textContent = `Users online: ${data}`;
+    })
     // --------------------------------------------------------
     // send message function
 

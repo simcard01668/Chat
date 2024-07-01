@@ -115,6 +115,12 @@ io.on('connection', (socket) => {
 
 })
 
+// -------------------------------------------------------------
+// user count
+setInterval(() => {
+    io.emit('user count', Object.keys(onlineUsers).length);
+    console.log(Object.keys(onlineUsers).length);
+}, 10000);
 
 // -------------------------------------------------------------
 //start server
