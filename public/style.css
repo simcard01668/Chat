@@ -44,3 +44,14 @@
     max-width: 70%;
     min-width: 10%;
 }
+
+/* --------------------------------------------
+profile section & user count section */
+
+.userProfile {
+    margin: 5px;
+}
+
+.userCount {
+    margin: 5px;
+}

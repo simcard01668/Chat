@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('usernameInput');
     const userPassword = document.getElementById('userPassword');
     const userCount = document.querySelector('.userCount');
+    const userProfile = document.querySelector('.userProfile');
 
     // -----------------------------------------------------------
     //button interaction
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('username accepted', function(username) {
         alert(`You are now logged in as ${username}!`);
         loginPage.classList.add('hidden');
-        profile.innerHTML = `Welcome ${username}!`;
+        userProfile.innerHTML = `Welcome ${username}!`;
     });
 
     // --------------------------------------------------------
@@ -133,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     //----------------------------------------------------------------
     // User count event
     socket.on('user count', (data) => {
-        profile.textContent = `Users online: ${data}`;
+        userCount.textContent = `Users online: ${data}`;
     })
     // --------------------------------------------------------
     // send message function
