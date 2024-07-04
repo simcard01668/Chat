@@ -6,3 +6,5 @@ const pool = mysql2.createPool({
     password:'137958426',
     database:'Chat'
 })
+
+module.exports = pool.promise()
