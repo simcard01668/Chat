@@ -1,7 +1,7 @@
 import { messageForm, messageInput, messagesContainer, clearBtn, chatWindow, usernameInput, userReg, userList, namePlace, imageInput, currentUser } from './config/config.js'
 
 document.addEventListener('DOMContentLoaded', () => {
-
+console.log('client.js loaded')
     // --------------------------------------------------------
     // declare socket and event listeners
     const socket = io();
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userPassword = document.getElementById('userPassword');
     const userCount = document.querySelector('.userCount');
     const userProfile = document.querySelector('.userProfile');
+    const chatPage = document.querySelector('#chatPage');
 
     // -----------------------------------------------------------
     //button interaction
@@ -39,9 +40,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --------------------------------------------------------
+    function submitRegistration() {
+        let username = document.getElementById('usernameRegInput').value;
+        let password = document.getElementById('userRegPassword').value;
+        let email = document.getElementById('userEmail').value;
+
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username, password, email
+            })
+        })
+            .then(response => response.json())
+            .then(data => { console.log(data) })
+            .catch(error => console.log(error))
+            console.log('submitted registration')
+    }
+
+
     //user registration: submit username to server
     document.getElementById('userReg').addEventListener('click', function (e) {
         e.preventDefault();
+        submitRegistration();
         const username = document.getElementById('usernameRegInput').value;
         const password = document.getElementById('userRegPassword').value;
         const email = document.getElementById('userEmail').value;
@@ -58,9 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(message);  // Optionally alert the user that the username is taken
     });
 
-    socket.on('username accepted', function(username) {
+    socket.on('username accepted', function (username) {
         alert(`You are now logged in as ${username}!`);
         loginPage.classList.add('hidden');
+        chatPage.classList.remove('hidden');
         userProfile.innerHTML = `Welcome ${username}!`;
     });
 
@@ -88,25 +112,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         if (data.isSelf) {
-            item.style.alignSelf = 'center'; 
+            item.style.alignSelf = 'center';
             usernameSpan.textContent = `You: `;
             messageSpan.textContent = 'have joint the chat';
             item.appendChild(usernameSpan);
             item.appendChild(messageSpan);
         } else {
-            item.style.alignSelf = 'center'; 
+            item.style.alignSelf = 'center';
             usernameSpan.textContent = `${data.username}: `;
             messageSpan.textContent = 'has joint the chat';
             item.appendChild(usernameSpan);
             item.appendChild(messageSpan);
         }
-        
+
         setTimeout(() => {
-        if(messagesContainer.firstChild){
-            messagesContainer.insertBefore(item, messagesContainer.firstChild);
-        } else {
-            messagesContainer.appendChild(item);
-        }}, 2000);
+            if (messagesContainer.firstChild) {
+                messagesContainer.insertBefore(item, messagesContainer.firstChild);
+            } else {
+                messagesContainer.appendChild(item);
+            }
+        }, 2000);
     });
 
     //----------------------------------------------------------------
@@ -118,18 +143,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageSpan = document.createElement('span');
         messageSpan.style.display = 'inline';
         item.classList.add('message-container');
-        item.style.alignSelf = 'center'; 
+        item.style.alignSelf = 'center';
         usernameSpan.textContent = `${data.username}: `;
         messageSpan.textContent = 'has left the chat';
         item.appendChild(usernameSpan);
         item.appendChild(messageSpan);
-        
+
         setTimeout(() => {
-        if(messagesContainer.firstChild){
-            messagesContainer.insertBefore(item, messagesContainer.firstChild);
-        } else {
-            messagesContainer.appendChild(item);
-        }}, 2000);
+            if (messagesContainer.firstChild) {
+                messagesContainer.insertBefore(item, messagesContainer.firstChild);
+            } else {
+                messagesContainer.appendChild(item);
+            }
+        }, 2000);
     })
     //----------------------------------------------------------------
     // User count event
@@ -153,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = document.createElement('div');
         const usernameSpan = document.createElement('span');
         usernameSpan.style.fontWeight = 'bold';
-        
+
         const messageSpan = document.createElement('span');
         messageSpan.textContent = data.message;
         messageSpan.style.display = 'inline';
@@ -172,9 +198,9 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(usernameSpan);
             item.appendChild(messageSpan);
         }
-      
+
         // socket.emit('userTyping', { username: currentUser, isTyping: false });
-        if(messagesContainer.firstChild){
+        if (messagesContainer.firstChild) {
             messagesContainer.insertBefore(item, messagesContainer.firstChild);
         } else {
             messagesContainer.appendChild(item);
@@ -182,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     //reject message if not logged in
-    socket.on('message reject', function (message){
+    socket.on('message reject', function (message) {
         alert(message);
         loginPage.classList.remove('hidden');
     })
@@ -242,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })
 
-    
+
     // ------------------------------------------------------------------------------
     // typing event function
 

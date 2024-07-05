@@ -4,7 +4,8 @@
   "main": "./public/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch public --watch main --ext js,html,css server.js"
+    "dev": "nodemon --watch public --watch main --ext js,html,css server.js",
+    "build": "nodemon server.js --exec babel-node"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,8 @@
     "socket.io": "^4.7.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/node": "^7.24.7",
     "nodemon": "^3.1.4"
   }
 }
