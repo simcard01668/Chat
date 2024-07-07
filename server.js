@@ -3,13 +3,31 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const pool = require('./database.js');
-
-
+const crypto = require('crypto');
+const secretKey = crypto.randomBytes(32).toString('hex');
+console.log(secretKey);
+//authenicate user
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = `${secretKey}`;
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     maxHttpBufferSize: 1e7 // Set max HTTP buffer size to 1MB
 });
+//User name registration
+let onlineUsers = [];
+
+//middleware for authenticating token
+function authenicateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus(401);
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -17,68 +35,43 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
     const { username, password, email } = req.body;
-    pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
+    await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
     try {
-        res.status(201).send('User successfully registered');
+        res.status(201).json({ register: true });
     } catch (error) {
         res.status(500).send('Error registering user');
     }
 });
 
-//User name registration
-let regUsers = {};
-let onlineUsers = {};
-
-function registerOnlineUser(username, socket) {
-    socket.username = username;
-    socket.emit('username accepted', username);
-    socket.emit('user connected', { username: socket.username, isSelf: true });
-
-    onlineUsers[username] = {
-        socketId: socket.id,
-        username: username
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const [result] = await pool.query('SELECT * FROM users Where username = ? AND password = ?', [username, password])
+        if (result.length > 0) {
+            const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
+            onlineUsers.push(username);
+            res.json({ loggedIn: true, token, username: username })
+        } else {
+            res.status(401).send('Invalid username or password!!!');
+        }
+    } catch (error) {
+        res.status(500).send('Error logging in');
     }
-}
+});
+
+app.post('token-login', authenicateToken, (req, res) => {
+    res.json({ loggedIn: true, username: decoded.username });
+});
+
+
 
 io.on('connection', (socket) => {
-    console.log('A new user has connected');
-    // ------------------------------------------------------------
-    // Register username for new connections
 
-    socket.on('register username', (regData) => {
-        const { username, password, email } = regData;
-        if (regUsers.hasOwnProperty(username)) {
-            socket.emit('username rejected', 'Username is already taken, please try another one.');
-            return;
-        }
-        //save the username and password
-        regUsers[username] = {
-            password: password,
-            email: email,
-        };
 
-        registerOnlineUser(username, socket);
-    
-        socket.broadcast.emit('user connected', { username: socket.username, isSelf: false });
-
-        console.log(onlineUsers);
-        //  console.log(`Username registered and set: ${socket.username}`);
-        //  console.log(regUsers);
-        updateUserCount();
-    });
-
-    socket.on('login', (loginData) => {
-        const { username, password } = loginData;
-        if (regUsers.hasOwnProperty(username) && regUsers[username].password === password) {
-            registerOnlineUser(username, socket);
-            console.log(onlineUsers);
-            updateUserCount();
-        }
-        else {
-            socket.emit('username rejected', 'Invalid username or password');
-        }
+    socket.on('update userCount', () => {
+        io.emit('user count', onlineUsers.length);
     });
 
     // -------------------------------------------------------------
@@ -105,7 +98,7 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('user disconnected', { username: socket.username });
         delete onlineUsers[socket.username];
         console.log(onlineUsers);
-        updateUserCount()
+        // updateUserCount()
     })
 
     // --------------------------------------------------------------
@@ -129,10 +122,7 @@ io.on('connection', (socket) => {
 
 // -------------------------------------------------------------
 // user count
-function updateUserCount() {
-    io.emit('user count', Object.keys(onlineUsers).length);
-    console.log(Object.keys(onlineUsers).length);
-};
+
 
 // -------------------------------------------------------------
 //start server

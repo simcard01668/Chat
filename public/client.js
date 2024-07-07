@@ -1,7 +1,6 @@
 import { messageForm, messageInput, messagesContainer, clearBtn, chatWindow, usernameInput, userReg, userList, namePlace, imageInput, currentUser } from './config/config.js'
 
 document.addEventListener('DOMContentLoaded', () => {
-console.log('client.js loaded')
     // --------------------------------------------------------
     // declare socket and event listeners
     const socket = io();
@@ -32,15 +31,42 @@ console.log('client.js loaded')
     });
 
     BtnLogin.addEventListener('click', () => {
+        BtnLoginToggle();
+    });
+
+    function BtnLoginToggle() {
         toggleContainer.classList.remove('active');
         regToggle.classList.remove('hidden');
         loginToggle.classList.add('hidden');
         loginMain.classList.remove('active');
         reg.classList.remove('active');
-    });
-
+    }
     // --------------------------------------------------------
-    function submitRegistration() {
+    //user authentication auto login
+    const token = localStorage.getItem('token');
+    if (token) {
+        fetch('/token-login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.loggedIn) {
+                loginPage.classList.add('hidden');
+                chatPage.classList.remove('hidden');
+                userProfile.innerHTML = `Welcome ${data.username}!`;
+                socket.emit('update userCount');
+            }
+        })
+        .catch(error => console.log(error))
+    }
+    // --------------------------------------------------------
+    //user registration: submit username to server
+    document.getElementById('userReg').addEventListener('click', function (e) {
+        e.preventDefault();
         let username = document.getElementById('usernameRegInput').value;
         let password = document.getElementById('userRegPassword').value;
         let email = document.getElementById('userEmail').value;
@@ -55,53 +81,52 @@ console.log('client.js loaded')
             })
         })
             .then(response => response.json())
-            .then(data => { console.log(data) })
+            .then(data => {
+                if (data.register) {
+                    alert(`You are registered as ${username}!, please login to continue`);
+                    BtnLoginToggle();
+                }
+            })
             .catch(error => console.log(error))
-            console.log('submitted registration')
-    }
-
-
-    //user registration: submit username to server
-    document.getElementById('userReg').addEventListener('click', function (e) {
-        e.preventDefault();
-        submitRegistration();
-        const username = document.getElementById('usernameRegInput').value;
-        const password = document.getElementById('userRegPassword').value;
-        const email = document.getElementById('userEmail').value;
-        const regData = {
-            username: username,
-            password: password,
-            email: email
-        }
-        socket.emit('register username', regData);
+        console.log('submitted registration')
     });
-
-    //user registration: reject from server
-    socket.on('username rejected', function (message) {
-        alert(message);  // Optionally alert the user that the username is taken
-    });
-
-    socket.on('username accepted', function (username) {
-        alert(`You are now logged in as ${username}!`);
-        loginPage.classList.add('hidden');
-        chatPage.classList.remove('hidden');
-        userProfile.innerHTML = `Welcome ${username}!`;
-    });
-
     // --------------------------------------------------------
     //user login: submit username to server
     document.getElementById('userLogin').addEventListener('click', (e) => {
         e.preventDefault();
-        const username = document.getElementById('usernameInput').value;
-        const password = document.getElementById('userPassword').value;
-        const loginData = {
-            username: username,
-            password: password
-        }
-        socket.emit('login', loginData);
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: usernameInput.value,
+                password: userPassword.value
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.loggedIn) {
+                    alert(`You are now logged in as ${data.username}!`);
+                    localStorage.setItem('token', data.token);
+                    loginPage.classList.add('hidden');
+                    chatPage.classList.remove('hidden');
+                    userProfile.innerHTML = `Welcome ${data.username}!`;
+                    socket.emit('update userCount');
+                } else {
+                    alert(data.message);
+                }
+            })
     })
-    // --------------------------------------------------------
+    // -------------------------------------------------------
     //alert new user connection
+
+    socket.on('user count', (data) => {
+        console.log('triggered');
+        userCount.textContent = `Users online: ${data}`;
+    })
+
     socket.on('user connected', function (data) {
         const item = document.createElement('div');
         const usernameSpan = document.createElement('span');
@@ -160,7 +185,7 @@ console.log('client.js loaded')
     //----------------------------------------------------------------
     // User count event
     socket.on('user count', (data) => {
-        userCount.textContent = `Users online: ${data}`;
+
     })
     // --------------------------------------------------------
     // send message function
