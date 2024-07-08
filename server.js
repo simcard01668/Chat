@@ -5,10 +5,8 @@ const path = require('path');
 const pool = require('./database.js');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(32).toString('hex');
-console.log(secretKey);
-//authenicate user
 const jwt = require('jsonwebtoken');
-const SECRET_KEY = `${secretKey}`;
+const SECRET_KEY = '123456789';
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -17,18 +15,6 @@ const io = socketIo(server, {
 //User name registration
 let onlineUsers = [];
 
-//middleware for authenticating token
-function authenicateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) return res.sendStatus(401);
-    jwt.verify(token, SECRET_KEY, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-}
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -36,9 +22,9 @@ app.get('/', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    const { username, password, email } = req.body;
-    await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
     try {
+        const { username, password, email } = req.body;
+    await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
         res.status(201).json({ register: true });
     } catch (error) {
         res.status(500).send('Error registering user');
@@ -48,27 +34,40 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const [result] = await pool.query('SELECT * FROM users Where username = ? AND password = ?', [username, password])
-        if (result.length > 0) {
+        const result = await pool.query('SELECT password FROM users WHERE username = ?', [username]);
+        if (result[0][0].password === password) {
+            console.log('User logged in:', username);
             const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
+            console.log('token:', token)
             onlineUsers.push(username);
             res.json({ loggedIn: true, token, username: username })
         } else {
             res.status(401).send('Invalid username or password!!!');
         }
     } catch (error) {
-        res.status(500).send('Error logging in');
+        res.status(500).json({ error: 'Error logging in' });
     }
 });
 
-app.post('token-login', authenicateToken, (req, res) => {
-    res.json({ loggedIn: true, username: decoded.username });
-});
-
-
 
 io.on('connection', (socket) => {
+    socket.emit('authentication');
 
+    socket.on('authenticate', (token) => {
+        console.log(token);
+        jwt.verify(token, SECRET_KEY, (err, decoded) => {
+            if (err) {
+                socket.emit('authentication failed');
+                console.log('Authentication failed', err.message)
+            } else {
+                socket.username = decoded.username;
+                onlineUsers.push(decoded.username);
+                io.emit('user count', onlineUsers.length);
+                console.log('User connected:', decoded.username);
+                socket.emit('authenticated', {username: decoded.username});
+            }
+        });
+    });
 
     socket.on('update userCount', () => {
         io.emit('user count', onlineUsers.length);
@@ -126,7 +125,7 @@ io.on('connection', (socket) => {
 
 // -------------------------------------------------------------
 //start server
-const PORT = process.env.PORT || 443;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 })

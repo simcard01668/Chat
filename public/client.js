@@ -43,27 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // --------------------------------------------------------
     //user authentication auto login
-    const token = localStorage.getItem('token');
-    if (token) {
-        fetch('/token-login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.loggedIn) {
-                loginPage.classList.add('hidden');
-                chatPage.classList.remove('hidden');
-                userProfile.innerHTML = `Welcome ${data.username}!`;
-                socket.emit('update userCount');
-            }
-        })
-        .catch(error => console.log(error))
+    socket.on('authentication', () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            socket.emit('authenticate', token);
+            console.log('send authenicate token');
+        }
     }
-    // --------------------------------------------------------
+    )
+
+    socket.on('authenticated', () => {
+        loginPage.classList.add('hidden');
+        chatPage.classList.remove('hidden');
+    })
+
+    // -------------------------------------------------------
     //user registration: submit username to server
     document.getElementById('userReg').addEventListener('click', function (e) {
         e.preventDefault();
@@ -115,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     userProfile.innerHTML = `Welcome ${data.username}!`;
                     socket.emit('update userCount');
                 } else {
-                    alert(data.message);
+                    alert('Invalid username or password!!!');
                 }
             })
     })
