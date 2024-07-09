@@ -12,13 +12,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginMain = document.querySelector('.login-main');
     const reg = document.querySelector('.reg');
     const loginPage = document.querySelector('#login-page');
-    const chatContainer = document.querySelector('.chat-container');
-    const profile = document.querySelector('.profile');
     const usernameInput = document.getElementById('usernameInput');
     const userPassword = document.getElementById('userPassword');
     const userCount = document.querySelector('.userCount');
     const userProfile = document.querySelector('.userProfile');
     const chatPage = document.querySelector('#chatPage');
+    const roomName = document.getElementById('roomName');
+    const logOut = document.getElementById('logOut');
+    const publicRoom = document.getElementById('publicRoom');
+    // --------------------------------------------------------
+    //room function
+    publicRoom.addEventListener('click', () => {
+        socket.emit('join public room');
+        roomName.textContent = 'Current Chatroom : Public Room';
+    });
+
+    socket.on('join public room', () => {
+        let room = 'public room';
+        roomName.textContent = `Current Chatroom : ${room}`;
+    });
 
     // -----------------------------------------------------------
     //button interaction
@@ -41,25 +53,33 @@ document.addEventListener('DOMContentLoaded', () => {
         loginMain.classList.remove('active');
         reg.classList.remove('active');
     }
+
+    logOut.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        alert('You are now logged out');
+        window.location.reload();
+    });
+
     // --------------------------------------------------------
     //user authentication auto login
     socket.on('authentication', () => {
         const token = localStorage.getItem('token');
         if (token) {
             socket.emit('authenticate', token);
-            console.log('send authenicate token');
         }
     }
     )
 
-    socket.on('authenticated', () => {
+    socket.on('authenticated', ({username}) => {
+        console.log(username)
         loginPage.classList.add('hidden');
         chatPage.classList.remove('hidden');
+        userProfile.innerHTML = `Welcome ${username}!`;
     })
 
     // -------------------------------------------------------
     //user registration: submit username to server
-    document.getElementById('userReg').addEventListener('click', function (e) {
+    document.getElementById('RegisterForm').addEventListener('submit', function (e) {
         e.preventDefault();
         let username = document.getElementById('usernameRegInput').value;
         let password = document.getElementById('userRegPassword').value;
@@ -104,10 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.loggedIn) {
                     alert(`You are now logged in as ${data.username}!`);
                     localStorage.setItem('token', data.token);
-                    loginPage.classList.add('hidden');
-                    chatPage.classList.remove('hidden');
-                    userProfile.innerHTML = `Welcome ${data.username}!`;
                     socket.emit('update userCount');
+                    socket.emit('authenticate', data.token);
                 } else {
                     alert('Invalid username or password!!!');
                 }
@@ -115,12 +133,39 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     // -------------------------------------------------------
     //alert new user connection
+    
+    function updateUserSet(onlineUsers) {
+        userList.innerHTML = ''; //clear the list
+        onlineUsers.forEach(user => {
+               addUser(user);
+        })
+    };
 
-    socket.on('user count', (data) => {
-        console.log('triggered');
-        userCount.textContent = `Users online: ${data}`;
+    function addUser(user) {
+        const li = document.createElement('li');
+        const button = document.createElement('button');
+        li.textContent = user;
+        button.textContent = 'Private Chat';
+        li.appendChild(button);
+        userList.appendChild(li);
+        button.addEventListener('click', () => {
+            console.log('private chat with', user);
+            socket.emit('start private chat', { username: user });
+        })
+    }
+
+    socket.on('join private room', ({room}) => {
+        console.log(room)
+        roomName.textContent = `Current Chatroom : ${room}`;
+    });
+
+    socket.on('user count', (onlineUsers) => {
+    
+        userCount.textContent = `Users online: ${onlineUsers.length}`;
+        updateUserSet(onlineUsers);
+
     })
-
+   
     socket.on('user connected', function (data) {
         const item = document.createElement('div');
         const usernameSpan = document.createElement('span');
@@ -142,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messageSpan.textContent = 'has joint the chat';
             item.appendChild(usernameSpan);
             item.appendChild(messageSpan);
+
         }
 
         setTimeout(() => {
@@ -151,36 +197,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 messagesContainer.appendChild(item);
             }
         }, 2000);
-    });
 
+  
+
+        
+    });
+    
+    
     //----------------------------------------------------------------
     // User disconnect event
     socket.on('user disconnected', (data) => {
-        const item = document.createElement('div');
-        const usernameSpan = document.createElement('span');
-        usernameSpan.style.fontWeight = 'bold';
-        const messageSpan = document.createElement('span');
-        messageSpan.style.display = 'inline';
-        item.classList.add('message-container');
-        item.style.alignSelf = 'center';
-        usernameSpan.textContent = `${data.username}: `;
-        messageSpan.textContent = 'has left the chat';
-        item.appendChild(usernameSpan);
-        item.appendChild(messageSpan);
+        if (data.username) {
+            const item = document.createElement('div');
+            const usernameSpan = document.createElement('span');
+            usernameSpan.style.fontWeight = 'bold';
+            const messageSpan = document.createElement('span');
+            messageSpan.style.display = 'inline';
+            item.classList.add('message-container');
+            item.style.alignSelf = 'center';
+            usernameSpan.textContent = `${data.username}: `;
+            messageSpan.textContent = 'has left the chat';
+            item.appendChild(usernameSpan);
+            item.appendChild(messageSpan);
 
-        setTimeout(() => {
-            if (messagesContainer.firstChild) {
-                messagesContainer.insertBefore(item, messagesContainer.firstChild);
-            } else {
-                messagesContainer.appendChild(item);
-            }
-        }, 2000);
+            setTimeout(() => {
+                if (messagesContainer.firstChild) {
+                    messagesContainer.insertBefore(item, messagesContainer.firstChild);
+                } else {
+                    messagesContainer.appendChild(item);
+                }
+            }, 2000);
+        }
     })
     //----------------------------------------------------------------
-    // User count event
-    socket.on('user count', (data) => {
 
-    })
     // --------------------------------------------------------
     // send message function
 
@@ -275,17 +325,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // -------------------------------------------------------------------------
     // user registration: update active user
-    socket.on('update user list', function (users) {
-        userList.innerHTML = ''; //clear the list
-        users.forEach(user => {
-            const li = document.createElement('li');
-            const span = document.createElement('span');
-            li.appendChild(span);
-            span.textContent = user;
-            userList.appendChild(li);
-        })
+    // socket.on('update user list', function (users) {
+    //     userList.innerHTML = ''; //clear the list
+    //     users.forEach(user => {
+    //         const li = document.createElement('li');
+    //         const span = document.createElement('span');
+    //         li.appendChild(span);
+    //         span.textContent = user;
+    //         userList.appendChild(li);
+    //     })
 
-    })
+    // })
 
 
     // ------------------------------------------------------------------------------

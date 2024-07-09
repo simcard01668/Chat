@@ -6,6 +6,7 @@ const pool = require('./database.js');
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(32).toString('hex');
 const jwt = require('jsonwebtoken');
+const { type } = require('os');
 const SECRET_KEY = '123456789';
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +15,10 @@ const io = socketIo(server, {
 });
 //User name registration
 let onlineUsers = [];
+
+// setInterval(() => {
+// console.log(onlineUsers);
+// },2000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -27,7 +32,7 @@ app.post('/register', async (req, res) => {
     await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
         res.status(201).json({ register: true });
     } catch (error) {
-        res.status(500).send('Error registering user');
+        res.status(500).json({ error });
     }
 });
 
@@ -36,10 +41,7 @@ app.post('/login', async (req, res) => {
     try {
         const result = await pool.query('SELECT password FROM users WHERE username = ?', [username]);
         if (result[0][0].password === password) {
-            console.log('User logged in:', username);
             const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
-            console.log('token:', token)
-            onlineUsers.push(username);
             res.json({ loggedIn: true, token, username: username })
         } else {
             res.status(401).send('Invalid username or password!!!');
@@ -49,42 +51,59 @@ app.post('/login', async (req, res) => {
     }
 });
 
-
 io.on('connection', (socket) => {
-    socket.emit('authentication');
+    console.log('A user has connected');
+
+    socket.emit('join public room', () => {
+        socket.join('public-chatroom');
+});
+
+    socket.on('start private chat', ({username}) => {
+        const privateRoom = `${socket.username}-${username}`;
+        socket.join(privateRoom);
+        socket.emit('join private room', {room: privateRoom});
+    });
+
+    // -------------------------------------------------------------
+    //authentication function
+    socket.emit('authentication'); // Send token authentication request to client
 
     socket.on('authenticate', (token) => {
-        console.log(token);
         jwt.verify(token, SECRET_KEY, (err, decoded) => {
             if (err) {
                 socket.emit('authentication failed');
                 console.log('Authentication failed', err.message)
             } else {
                 socket.username = decoded.username;
-                onlineUsers.push(decoded.username);
-                io.emit('user count', onlineUsers.length);
-                console.log('User connected:', decoded.username);
-                socket.emit('authenticated', {username: decoded.username});
+                if(!onlineUsers.includes(socket.username)){ 
+                    onlineUsers.push(socket.username);
+                }
+                io.emit('user count', onlineUsers);
+                socket.emit('user connected', { username: socket.username, isSelf: true });
+                socket.broadcast.emit('user connected', { username: socket.username, isSelf: false });
+                socket.emit('authenticated', {username: socket.username});  
+            
             }
         });
     });
 
     socket.on('update userCount', () => {
-        io.emit('user count', onlineUsers.length);
+        io.emit('user count', onlineUsers);
     });
 
     // -------------------------------------------------------------
     //send message functions
     socket.on('chat message', (msg) => {
         console.log('Accessing username:', socket.username);
-        console.log(regUsers.hasOwnProperty(socket.username));
-        if (socket.username && regUsers.hasOwnProperty(socket.username)) {
+        if (socket.username && onlineUsers.includes(socket.username)) {
             const messageData = {
                 username: socket.username,
                 message: msg
             };
             socket.emit('chat message', { ...messageData, isSelf: true });
             socket.broadcast.emit('chat message', { ...messageData, isSelf: false });
+
+            
         } else {
             socket.emit('message reject', 'You are not logged in, please log in first.');
         }
@@ -93,15 +112,19 @@ io.on('connection', (socket) => {
     // -------------------------------------------------------------
     //handle disconnection event
     socket.on('disconnect', () => {
-        console.log('A user has disconnected');
+        console.log('A user has disconnected', socket.username);
         socket.broadcast.emit('user disconnected', { username: socket.username });
-        delete onlineUsers[socket.username];
-        console.log(onlineUsers);
-        // updateUserCount()
+        if(onlineUsers.includes(socket.username)){
+        const index = onlineUsers.indexOf(socket.username)
+        onlineUsers.splice(index, 1);
+        }
+        io.emit('user count', onlineUsers);
+        
     })
+    // -------------------------------------------------------------
+    // room function
+    
 
-    // --------------------------------------------------------------
-    //login function
 
 
     // -------------------------------------------------------------

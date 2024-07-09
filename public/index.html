@@ -34,8 +34,8 @@
                 <h2>Create an account here</h2>
                 <form id="RegisterForm">
                     <input class="input-login" type="text" id="usernameRegInput" maxlength="12" placeholder="Your Username here...." required autocomplete="username">
-                    <input class="input-login" type="password" id="userRegPassword" placeholder="Create Password" required autocomplete="new-password">
-                    <input class="input-login" type="email" id="userEmail" placeholder="Emails" required autocomplete="email">
+                    <input class="input-login" type="password" id="userRegPassword" placeholder="Create Password" required>
+                    <input class="input-login" type="email" id="userEmail" placeholder="Emails" required>
                     <button class="button-login" id="userReg">Register Username <i class="fa-solid fa-address-card"></i></button>
                 </form>
             </div>
@@ -65,7 +65,7 @@
             <div class="col-3 container-border">
                 <span>Welcome to chatbot Developed by Isaac</span>
             </div>
-            <div class="col-9 container-border">Channel Name</div>
+            <div class="col-9 container-border" id="roomName">Channel Name</div>
         </div>
 
         <!-- --------------------------------------
@@ -73,6 +73,11 @@
         <div class="row middle-container" style="flex-grow: 24;">
             <div class="col-3 container-border">
                 <div>
+                    <p>Channels</p>
+                    <p>Public Channel<button id="publicRoom">Join</button></p>
+                    <ul id="channelList"></ul>
+                    <button id="addChannel">Add Channel</button>
+                    
                     <p>Online Users</p>
                     <ul id="userList"></ul>
                 </div>
@@ -85,7 +90,11 @@
         <!-- -------------------------------------------
         bottom -->
         <div class="row" style="flex-grow: 2;">
-            <div class="col-3 container-border"><p class="userProfile"></p><span class="userCount"></span></div>
+            <div class="col-3 container-border">
+                <p class="userProfile"></p>
+                <p class="userCount"></p>
+                <button id="logOut">Logout</button>
+            </div>
             <div class="col-9 container-border">
                 <div id="type"></div>
                 <form id="message-form">
