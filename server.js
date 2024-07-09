@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 app.post('/register', async (req, res) => {
     try {
         const { username, password, email } = req.body;
-    await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
+        await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
         res.status(201).json({ register: true });
     } catch (error) {
         res.status(500).json({ error });
@@ -54,6 +54,22 @@ app.post('/login', async (req, res) => {
 io.on('connection', (socket) => {
     console.log('A user has connected');
 
+<<<<<<< HEAD
+    socket.emit('join public room', { room: 'Public Chat Room' }, () => {
+        socket.join('public-chatroom');
+    });
+
+    socket.on('join public room', () => {
+        socket.emit('join public room', { room: 'Public Chat Room' }, () => {
+            socket.join('public-chatroom');
+        });
+    });
+
+    socket.on('start private chat', ({ username }) => {
+        const privateRoom = `${socket.username}-${username}`;
+        socket.join(privateRoom);
+        socket.emit('join private room', { room: privateRoom });
+=======
     socket.emit('join public room', () => {
         socket.join('public-chatroom');
 });
@@ -62,6 +78,7 @@ io.on('connection', (socket) => {
         const privateRoom = `${socket.username}-${username}`;
         socket.join(privateRoom);
         socket.emit('join private room', {room: privateRoom});
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
     });
 
     // -------------------------------------------------------------
@@ -75,14 +92,23 @@ io.on('connection', (socket) => {
                 console.log('Authentication failed', err.message)
             } else {
                 socket.username = decoded.username;
+<<<<<<< HEAD
+                if (!onlineUsers.includes(socket.username)) {
+=======
                 if(!onlineUsers.includes(socket.username)){ 
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
                     onlineUsers.push(socket.username);
                 }
                 io.emit('user count', onlineUsers);
                 socket.emit('user connected', { username: socket.username, isSelf: true });
                 socket.broadcast.emit('user connected', { username: socket.username, isSelf: false });
+<<<<<<< HEAD
+                socket.emit('authenticated', { username: socket.username });
+
+=======
                 socket.emit('authenticated', {username: socket.username});  
             
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
             }
         });
     });
@@ -93,18 +119,39 @@ io.on('connection', (socket) => {
 
     // -------------------------------------------------------------
     //send message functions
-    socket.on('chat message', (msg) => {
+    socket.on('chat message', (msg, currentRoom) => {
         console.log('Accessing username:', socket.username);
+<<<<<<< HEAD
+        if (socket.username && onlineUsers.includes(socket.username) && currentRoom === 'public-chatroom') {
+=======
         if (socket.username && onlineUsers.includes(socket.username)) {
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
             const messageData = {
                 username: socket.username,
                 message: msg
             };
+<<<<<<< HEAD
+            socket.emit('chat message', { ...messageData, isSelf: true});
+            socket.broadcast.emit('chat message', { ...messageData, isSelf: false});
+
+
+        } else if (socket.username && onlineUsers.includes(socket.username)) {
+            const messageData = {
+                username: socket.username,
+                message: msg
+            };
+            io.to(currentRoom).emit('chat message', { ...messageData, isSelf: true});
+            // socket.to(currentRoom).emit('chat message', { ...messageData, isSelf: false});
+        }
+
+        else {
+=======
             socket.emit('chat message', { ...messageData, isSelf: true });
             socket.broadcast.emit('chat message', { ...messageData, isSelf: false });
 
             
         } else {
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
             socket.emit('message reject', 'You are not logged in, please log in first.');
         }
     });
@@ -114,6 +161,18 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('A user has disconnected', socket.username);
         socket.broadcast.emit('user disconnected', { username: socket.username });
+<<<<<<< HEAD
+        if (onlineUsers.includes(socket.username)) {
+            const index = onlineUsers.indexOf(socket.username)
+            onlineUsers.splice(index, 1);
+        }
+        io.emit('user count', onlineUsers);
+
+    })
+    // -------------------------------------------------------------
+    // room function
+
+=======
         if(onlineUsers.includes(socket.username)){
         const index = onlineUsers.indexOf(socket.username)
         onlineUsers.splice(index, 1);
@@ -124,6 +183,7 @@ io.on('connection', (socket) => {
     // -------------------------------------------------------------
     // room function
     
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
 
 
 

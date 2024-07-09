@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const publicRoom = document.getElementById('publicRoom');
     // --------------------------------------------------------
     //room function
+<<<<<<< HEAD
+    let currentRoom = 'Public Chat Room';
+    publicRoom.addEventListener('click', () => {
+        socket.emit('join public room');
+=======
     publicRoom.addEventListener('click', () => {
         socket.emit('join public room');
         roomName.textContent = 'Current Chatroom : Public Room';
@@ -30,8 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('join public room', () => {
         let room = 'public room';
         roomName.textContent = `Current Chatroom : ${room}`;
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
     });
 
+    socket.on('join public room', ({room}) => {
+        currentRoom = room;
+        roomName.textContent = `Current Chatroom : ${currentRoom}`;
+    });
+
+    socket.on('join private room', ({room}) => {
+        currentRoom = room;
+        roomName.textContent = `Current Chatroom : ${currentRoom}`;
+    });
     // -----------------------------------------------------------
     //button interaction
     BtnReg.addEventListener('click', () => {
@@ -154,10 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 
+<<<<<<< HEAD
+   
+=======
     socket.on('join private room', ({room}) => {
         console.log(room)
         roomName.textContent = `Current Chatroom : ${room}`;
     });
+>>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
 
     socket.on('user count', (onlineUsers) => {
     
@@ -238,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         console.log('submitted message')
         if (messageInput.value) {
-            socket.emit('chat message', messageInput.value);
+            socket.emit('chat message', messageInput.value, currentRoom );
             messageInput.value = '';
         }
     })
