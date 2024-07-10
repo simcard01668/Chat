@@ -4,7 +4,7 @@
   "main": "./public/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch public --watch main --ext js,html,css server.js",
+    "dev": "nodemon server.js",
     "build": "nodemon server.js --exec babel-node"
   },
   "keywords": [],

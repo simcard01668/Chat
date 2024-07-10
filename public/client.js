@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomName = document.getElementById('roomName');
     const logOut = document.getElementById('logOut');
     const publicRoom = document.getElementById('publicRoom');
+    const createRoom = document.getElementById('createRoom');
+    const roomList = document.getElementById('roomList');
     // --------------------------------------------------------
     //room function
     let currentRoom = 'Public Chat Room';
@@ -27,17 +29,29 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('join public room');
     });
 
-    socket.on('join public room', ({room}) => {
+    socket.on('join public room', ({ room }) => {
         currentRoom = room;
         roomName.textContent = `Current Chatroom : ${currentRoom}`;
     });
 
-    socket.on('join private room', ({room}) => {
-        currentRoom = room;
-        roomName.textContent = `Current Chatroom : ${currentRoom}`;
-    });
+
+    //check docs to see how to private messaging
+
     // -----------------------------------------------------------
     //button interaction
+    createRoom.addEventListener('click', () => {
+        const room = prompt('Enter room name');
+        if (room) {
+            socket.emit('create room', room);
+        }
+    });
+
+    socket.on('append room', ({ room }) => {
+        const li = document.createElement('li');
+        li.textContent = room;
+        roomList.appendChild(li);
+    });
+
     BtnReg.addEventListener('click', () => {
         toggleContainer.classList.add('active');
         regToggle.classList.add('hidden');
@@ -74,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     )
 
-    socket.on('authenticated', ({username}) => {
+    socket.on('authenticated', ({ username }) => {
         console.log(username)
         loginPage.classList.add('hidden');
         chatPage.classList.remove('hidden');
@@ -137,11 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     // -------------------------------------------------------
     //alert new user connection
-    
+
     function updateUserSet(onlineUsers) {
         userList.innerHTML = ''; //clear the list
         onlineUsers.forEach(user => {
-               addUser(user);
+            addUser(user);
         })
     };
 
@@ -154,19 +168,19 @@ document.addEventListener('DOMContentLoaded', () => {
         userList.appendChild(li);
         button.addEventListener('click', () => {
             console.log('private chat with', user);
-            socket.emit('start private chat', { username: user });
+            socket.emit('start private chat', { username: user }); //require change
         })
     }
 
-   
+
 
     socket.on('user count', (onlineUsers) => {
-    
+
         userCount.textContent = `Users online: ${onlineUsers.length}`;
         updateUserSet(onlineUsers);
 
     })
-   
+
     socket.on('user connected', function (data) {
         const item = document.createElement('div');
         const usernameSpan = document.createElement('span');
@@ -199,12 +213,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 2000);
 
-  
 
-        
+
+
     });
-    
-    
+
+
     //----------------------------------------------------------------
     // User disconnect event
     socket.on('user disconnected', (data) => {
@@ -239,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         console.log('submitted message')
         if (messageInput.value) {
-            socket.emit('chat message', messageInput.value, currentRoom );
+            socket.emit('chat message', messageInput.value, currentRoom);
             messageInput.value = '';
         }
     })

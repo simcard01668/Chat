@@ -15,6 +15,7 @@ const io = socketIo(server, {
 });
 //User name registration
 let onlineUsers = [];
+let rooms = [];
 
 // setInterval(() => {
 // console.log(onlineUsers);
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+//API for registration and login
 app.post('/register', async (req, res) => {
     try {
         const { username, password, email } = req.body;
@@ -51,23 +53,15 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// -------------------------------------------------------------
+//socket.io logic
 io.on('connection', (socket) => {
     console.log('A user has connected');
 
-    socket.emit('join public room', { room: 'Public Chat Room' }, () => {
-        socket.join('public-chatroom');
-    });
-
-    socket.on('join public room', () => {
-        socket.emit('join public room', { room: 'Public Chat Room' }, () => {
-            socket.join('public-chatroom');
+    socket.on('create room', (room) => {
+        socket.emit('append room', { room }, () => {
+            rooms.push(room);
         });
-    });
-
-    socket.on('start private chat', ({ username }) => {
-        const privateRoom = `${socket.username}-${username}`;
-        socket.join(privateRoom);
-        socket.emit('join private room', { room: privateRoom });
     });
 
     // -------------------------------------------------------------
@@ -101,23 +95,16 @@ io.on('connection', (socket) => {
     //send message functions
     socket.on('chat message', (msg, currentRoom) => {
         console.log('Accessing username:', socket.username);
-        if (socket.username && onlineUsers.includes(socket.username) && currentRoom === 'public-chatroom') {
+        if (socket.username && onlineUsers.includes(socket.username)) {
             const messageData = {
                 username: socket.username,
                 message: msg
             };
-            socket.emit('chat message', { ...messageData, isSelf: true});
-            socket.broadcast.emit('chat message', { ...messageData, isSelf: false});
+            socket.emit('chat message', { ...messageData, isSelf: true });
+            socket.broadcast.emit('chat message', { ...messageData, isSelf: false });
 
 
-        } else if (socket.username && onlineUsers.includes(socket.username)) {
-            const messageData = {
-                username: socket.username,
-                message: msg
-            };
-            io.to(currentRoom).emit('chat message', { ...messageData, isSelf: true});
-            // socket.to(currentRoom).emit('chat message', { ...messageData, isSelf: false});
-        }
+        } 
 
         else {
             socket.emit('message reject', 'You are not logged in, please log in first.');
