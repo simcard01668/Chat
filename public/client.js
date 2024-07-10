@@ -22,20 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const publicRoom = document.getElementById('publicRoom');
     // --------------------------------------------------------
     //room function
-<<<<<<< HEAD
     let currentRoom = 'Public Chat Room';
     publicRoom.addEventListener('click', () => {
         socket.emit('join public room');
-=======
-    publicRoom.addEventListener('click', () => {
-        socket.emit('join public room');
-        roomName.textContent = 'Current Chatroom : Public Room';
-    });
-
-    socket.on('join public room', () => {
-        let room = 'public room';
-        roomName.textContent = `Current Chatroom : ${room}`;
->>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
     });
 
     socket.on('join public room', ({room}) => {
@@ -169,14 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     }
 
-<<<<<<< HEAD
    
-=======
-    socket.on('join private room', ({room}) => {
-        console.log(room)
-        roomName.textContent = `Current Chatroom : ${room}`;
-    });
->>>>>>> 14bb0b9f9cb77c54fff682ddac09ead742b965dd
 
     socket.on('user count', (onlineUsers) => {
     
