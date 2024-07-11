@@ -57,12 +57,20 @@ app.post('/login', async (req, res) => {
 //socket.io logic
 io.on('connection', (socket) => {
     console.log('A user has connected');
-
+    socket.join('Public');
     socket.on('create room', (room) => {
-        socket.emit('append room', { room }, () => {
-            rooms.push(room);
-        });
+
+        console.log('Room:', room);
+        rooms.push(room);
+        io.emit('appending room', rooms);
+        console.log('Rooms:', rooms);
     });
+
+    socket.on('join room', (room) => {
+        socket.join(room);
+        socket.emit('room joined', room);
+    }
+    );
 
     // -------------------------------------------------------------
     //authentication function
@@ -82,6 +90,7 @@ io.on('connection', (socket) => {
                 socket.emit('user connected', { username: socket.username, isSelf: true });
                 socket.broadcast.emit('user connected', { username: socket.username, isSelf: false });
                 socket.emit('authenticated', { username: socket.username });
+                io.emit('appending room', rooms);
 
             }
         });
@@ -94,22 +103,26 @@ io.on('connection', (socket) => {
     // -------------------------------------------------------------
     //send message functions
     socket.on('chat message', (msg, currentRoom) => {
-        console.log('Accessing username:', socket.username);
-        if (socket.username && onlineUsers.includes(socket.username)) {
+        currentRoom.toString();
+        if (socket.username || onlineUsers.includes(socket.username) && currentRoom == 'Public') {
             const messageData = {
                 username: socket.username,
                 message: msg
             };
-            socket.emit('chat message', { ...messageData, isSelf: true });
-            socket.broadcast.emit('chat message', { ...messageData, isSelf: false });
-
-
-        } 
-
-        else {
+            socket.to(currentRoom).emit('chat message', { ...messageData, isSelf: true });
+            socket.broadcast.to(currentRoom).emit('chat message', { ...messageData, isSelf: false });
+        } else if (socket.username || onlineUsers.includes(socket.username)) {
+            const messageData = {
+                username: socket.username,
+                message: msg
+            };
+            socket.to(currentRoom).emit('chat message', { ...messageData, isSelf: true });
+            socket.broadcast.to(currentRoom).emit('chat message', { ...messageData, isSelf: false });
+        } else {
             socket.emit('message reject', 'You are not logged in, please log in first.');
         }
     });
+    
 
     // -------------------------------------------------------------
     //handle disconnection event
@@ -142,6 +155,11 @@ io.on('connection', (socket) => {
         io.emit('receive image', data.image, socket.username);
     });
 
+    socket.on('update room', (currentUser, currentRoom) => {
+        console.log(`${currentUser} is now at room ${currentRoom}`);
+    });
+    
+
 })
 
 // -------------------------------------------------------------
@@ -154,5 +172,4 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 })
-
 

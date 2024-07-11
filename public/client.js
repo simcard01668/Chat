@@ -23,16 +23,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const createRoom = document.getElementById('createRoom');
     const roomList = document.getElementById('roomList');
     // --------------------------------------------------------
-    //room function
-    let currentRoom = 'Public Chat Room';
-    publicRoom.addEventListener('click', () => {
-        socket.emit('join public room');
-    });
+   
+    //room s
+    let currentRoom = 'Public';
+    roomName.textContent = `Current Chatroom : ${currentRoom}`;
+    // publicRoom.addEventListener('click', () => {
+    //     socket.emit('join public room');
+    // });
 
-    socket.on('join public room', ({ room }) => {
-        currentRoom = room;
-        roomName.textContent = `Current Chatroom : ${currentRoom}`;
-    });
+    // socket.on('join public room', ({ room }) => {
+    //     currentRoom = room;
+    //     roomName.textContent = `Current Chatroom : ${currentRoom}`;
+    // });
 
 
     //check docs to see how to private messaging
@@ -40,16 +42,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------------------
     //button interaction
     createRoom.addEventListener('click', () => {
-        const room = prompt('Enter room name');
+        const room = prompt('Enter public channel name');
         if (room) {
             socket.emit('create room', room);
         }
     });
 
-    socket.on('append room', ({ room }) => {
-        const li = document.createElement('li');
-        li.textContent = room;
-        roomList.appendChild(li);
+    socket.on('appending room', (rooms) => {
+        if (rooms.length !== 0) {
+            roomList.innerHTML = '';
+            rooms.forEach(room => {
+                const li = document.createElement('li');
+                const button = document.createElement('button');
+                li.textContent = room;
+                button.textContent = 'Join Room';
+                li.appendChild(button);
+                roomList.appendChild(li);
+                li.addEventListener('click', () => {
+                    socket.emit('join room', room);  //need to change
+                })
+            })
+        }
+    }
+    );
+
+    socket.on('room joined', ( room ) => {
+        console.log('You have joined', room);
+        alert(`You have joined ${room}`);
+        currentRoom = room;
+        roomName.textContent = `Current Chatroom : ${currentRoom}`;
+        messagesContainer.innerHTML = '';
     });
 
     BtnReg.addEventListener('click', () => {
@@ -90,10 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('authenticated', ({ username }) => {
         console.log(username)
+        let currentUser = username;
         loginPage.classList.add('hidden');
         chatPage.classList.remove('hidden');
         userProfile.innerHTML = `Welcome ${username}!`;
     })
+
+    setInterval(() => {
+        socket.emit('update room', currentUser, currentRoom);
+    }, 2000);
 
     // -------------------------------------------------------
     //user registration: submit username to server
@@ -175,10 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     socket.on('user count', (onlineUsers) => {
-
         userCount.textContent = `Users online: ${onlineUsers.length}`;
         updateUserSet(onlineUsers);
-
     })
 
     socket.on('user connected', function (data) {
@@ -212,13 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 messagesContainer.appendChild(item);
             }
         }, 2000);
-
-
-
-
     });
-
-
     //----------------------------------------------------------------
     // User disconnect event
     socket.on('user disconnected', (data) => {
@@ -251,9 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     messageForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        console.log('submitted message')
         if (messageInput.value) {
-            socket.emit('chat message', messageInput.value, currentRoom);
+            socket.emit('chat message', messageInput.value, currentRoom, socket.username);
             messageInput.value = '';
         }
     })
@@ -387,3 +405,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 })
+
+  
