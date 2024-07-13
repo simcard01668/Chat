@@ -23,24 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const createRoom = document.getElementById('createRoom');
     const roomList = document.getElementById('roomList');
     // --------------------------------------------------------
-   
-    //room s
     let currentRoom = 'Public';
+    let currentUser;
     roomName.textContent = `Current Chatroom : ${currentRoom}`;
-    // publicRoom.addEventListener('click', () => {
-    //     socket.emit('join public room');
-    // });
 
-    // socket.on('join public room', ({ room }) => {
-    //     currentRoom = room;
-    //     roomName.textContent = `Current Chatroom : ${currentRoom}`;
-    // });
-
-
-    //check docs to see how to private messaging
 
     // -----------------------------------------------------------
     //button interaction
+    publicRoom.addEventListener('click', () => {
+        socket.emit('join room', 'Public');
+    });
+
     createRoom.addEventListener('click', () => {
         const room = prompt('Enter public channel name');
         if (room) {
@@ -66,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     );
 
-    socket.on('room joined', ( room ) => {
+    socket.on('room joined', (room) => {
         console.log('You have joined', room);
         alert(`You have joined ${room}`);
         currentRoom = room;
@@ -110,17 +103,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     )
 
+
     socket.on('authenticated', ({ username }) => {
-        console.log(username)
-        let currentUser = username;
+        currentUser = username;
         loginPage.classList.add('hidden');
         chatPage.classList.remove('hidden');
         userProfile.innerHTML = `Welcome ${username}!`;
+        console.log(socket.rooms)
     })
 
+    ///////////////////////////////////////////////////////////////
+    // debug only
     setInterval(() => {
-        socket.emit('update room', currentUser, currentRoom);
-    }, 2000);
+        socket.emit('update room', currentUser);
+    }, 3000);
 
     // -------------------------------------------------------
     //user registration: submit username to server
@@ -189,14 +185,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function addUser(user) {
         const li = document.createElement('li');
         const button = document.createElement('button');
-        li.textContent = user;
         button.textContent = 'Private Chat';
+        
+
         li.appendChild(button);
+        li.appendChild(document.createTextNode(user));
+    
         userList.appendChild(li);
+        
         button.addEventListener('click', () => {
-            console.log('private chat with', user);
-            socket.emit('start private chat', { username: user }); //require change
-        })
+            alert(`You have joined ${user}`);
+            messagesContainer.innerHTML = '';
+            currentRoom = user;
+            roomName.textContent = `Current Chatroom : ${currentRoom}`;
+        });
     }
 
 
@@ -274,33 +276,29 @@ document.addEventListener('DOMContentLoaded', () => {
             socket.emit('chat message', messageInput.value, currentRoom, socket.username);
             messageInput.value = '';
         }
+        console.log('submitted message')
     })
 
     //listen to message from server and appending to chat
-    socket.on('chat message', function (data) {
+    socket.on('received message', function (data) {
         const item = document.createElement('div');
         const usernameSpan = document.createElement('span');
         usernameSpan.style.fontWeight = 'bold';
-
         const messageSpan = document.createElement('span');
         messageSpan.textContent = data.message;
         messageSpan.style.display = 'inline';
-
         item.classList.add('message-container');
 
-
-        if (data.isSelf) {
+        if (data.username === currentUser) {
             item.style.alignSelf = 'flex-end'; // Moves self messages to the right
             usernameSpan.textContent = `You: `;
-            item.appendChild(usernameSpan);
-            item.appendChild(messageSpan);
         } else {
             item.style.alignSelf = 'flex-start'; // Keeps other messages on the left
             usernameSpan.textContent = `${data.username}: `;
-            item.appendChild(usernameSpan);
-            item.appendChild(messageSpan);
-        }
 
+        }
+        item.appendChild(usernameSpan);
+        item.appendChild(messageSpan);
         // socket.emit('userTyping', { username: currentUser, isTyping: false });
         if (messagesContainer.firstChild) {
             messagesContainer.insertBefore(item, messagesContainer.firstChild);
@@ -406,4 +404,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 })
 
-  
