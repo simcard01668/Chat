@@ -25,7 +25,7 @@ instrument(io, {
 });
 
 //User name registration
-let onlineUsers = [];
+let onlineUsers = {};
 let rooms = [];
 
 // setInterval(() => {
@@ -45,7 +45,11 @@ app.post('/register', async (req, res) => {
         await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
         res.status(201).json({ register: true });
     } catch (error) {
-        res.status(500).json({ error });
+        if(error.code === 'ER_DUP_ENTRY') {
+            res.status(409).json({ error: 'Username already exists' });
+        } else {
+            res.status(500).json({ error: 'Error registering user' });
+        }
     }
 });
 
@@ -57,12 +61,19 @@ app.post('/login', async (req, res) => {
             const token = jwt.sign({ username: username }, SECRET_KEY, { expiresIn: '1h' });
             res.json({ loggedIn: true, token, username: username })
         } else {
-            res.status(401).send('Invalid username or password!!!');
+            res.status(401).json('Invalid username or password!!!');
         }
     } catch (error) {
         res.status(500).json({ error: 'Error logging in' });
     }
 });
+
+async function fetchMessages(room_id) {
+    const fetchQuery = `select * from messages where room_id = ? ORDER BY timestamp DESC LIMIT 30;`;
+    const [message] = await pool.query(fetchQuery, [room_id]);
+    return message;
+}
+
 
 // -------------------------------------------------------------
 //socket.io logic
@@ -71,6 +82,10 @@ io.on('connection', (socket) => {
     socket.join('Public');
     const room = Array.from(socket.rooms)[1];
 
+    fetchMessages('Public').then((messages) => {
+        socket.emit('fetch messages', messages);
+    })
+
     socket.on('create room', (room) => {
         console.log('Room:', room);
         rooms.push(room);
@@ -78,17 +93,21 @@ io.on('connection', (socket) => {
         console.log('Rooms:', rooms);
     });
 
-    socket.on('join room', (room) => {
+    socket.on('join room', (room, user) => {
         const oldRoom = Array.from(socket.rooms)[1];
         socket.leave(oldRoom);
         socket.join(room);
-        socket.emit('room joined', room);
+        socket.emit('room joined', room, user);
+        fetchMessages(room).then((messages) => {
+            socket.emit('fetch messages', messages);
+        })
     }
     );
 
     // -------------------------------------------------------------
     //authentication function
     socket.emit('authentication'); // Send token authentication request to client
+
 
     socket.on('authenticate', (token) => {
         jwt.verify(token, SECRET_KEY, (err, decoded) => {
@@ -97,9 +116,10 @@ io.on('connection', (socket) => {
                 console.log('Authentication failed', err.message)
             } else {
                 socket.username = decoded.username;
-                if (!onlineUsers.includes(socket.username)) {
-                    onlineUsers.push(socket.username);
+                if (!onlineUsers[socket.username]) {
+                    onlineUsers[socket.username] = {};
                 }
+                onlineUsers[socket.username].socket_id = socket.id;
                 io.emit('user count', onlineUsers);
                 socket.emit('user connected', { username: socket.username, isSelf: true });
                 socket.broadcast.emit('user connected', { username: socket.username, isSelf: false });
@@ -116,15 +136,30 @@ io.on('connection', (socket) => {
     // -------------------------------------------------------------
     // send message functions
 
-    socket.on('chat message', (msg, currentRoom) => {
+    socket.on('chat message', async (msg, currentRoom) => {
         if (socket.username || onlineUsers.includes(socket.username)) {
             const messageData = {
                 username: socket.username,
                 message: msg
             };
+            // if(currentRoom in onlineUsers) {
+            // currentRoom = onlineUsers[currentRoom].socket_id;
+            // };
             io.to(currentRoom).emit('received message', { ...messageData });
+            console.log(currentRoom)
         } else {
             socket.emit('message reject', 'You are not logged in, please log in first.');
+        }
+
+        const sender_id = socket.username
+        const message = msg
+        const room_id = currentRoom
+        const status = 'unread'
+
+        try {
+            await pool.query('INSERT INTO messages (room_id, sender_id, message, status) VALUES (?, ?, ?, ?)', [room_id, sender_id, message,  status])
+        } catch (error) {
+            console.log(error)
         }
     }
     );
@@ -137,9 +172,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('A user has disconnected', socket.username);
         socket.broadcast.emit('user disconnected', { username: socket.username });
-        if (onlineUsers.includes(socket.username)) {
-            const index = onlineUsers.indexOf(socket.username)
-            onlineUsers.splice(index, 1);
+        if (socket.username in onlineUsers) {
+            delete onlineUsers[socket.username];
         }
         io.emit('user count', onlineUsers);
 
@@ -167,11 +201,10 @@ io.on('connection', (socket) => {
     ///////////////////////////////////////////////////////////////////
     // debug only
     socket.on('update room', (currentUser) => {
-        console.log(socket.rooms)
-
-        console.log(`${currentUser} is now at room ${room}`);
+        // console.log(socket.rooms)
+        // console.log(`${currentUser} is now at room ${room}`);
+        // console.log(onlineUsers)
     });
-
 })
 
 // -------------------------------------------------------------

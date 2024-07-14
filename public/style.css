@@ -1,11 +1,35 @@
 .container-border {
-    border : 2px solid rgb(0, 0, 0);
- }
-
- html, body {
-    height: 100%; /* Ensures that the HTML and body take full height of the viewport */
-    margin: 0; /* Removes default margin */
+    border: 2px solid rgb(0, 0, 0);
 }
+
+#chatPage {
+    overflow: hidden; /* Prevent content from wrapping and hide overflow */
+    white-space: nowrap; /* Prevent wrapping within flex items */
+}
+
+html,
+body {
+    height: 100%;
+    /* Ensures that the HTML and body take full height of the viewport */
+    margin: 0;
+    /* Removes default margin */
+}
+
+#roomName {
+    font-size: 2rem;
+    font-weight: 900;
+}
+
+.firstCol{
+    min-width: 200px;;
+}
+
+
+
+
+
+
+
 
 .full-height {
     display: flex;
@@ -27,11 +51,12 @@
     display: none;
 }
 
-#chat{
+#chat {
     display: flex;
     flex-direction: column-reverse;
     height: 100%;
     overflow-wrap: break-word;
+    overflow: wrap;
 }
 
 .message-container {
@@ -44,6 +69,55 @@
     max-width: 70%;
     min-width: 10%;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* --------------------------------------------
 profile section & user count section */
@@ -73,7 +147,80 @@ login page CSS */
     width: auto;
     flex-direction: row;
 
+
 }
+
+
+
+
+
+/* ------------------------------------ */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.border-login {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+}
+
+.login-main {
+    text-align: center;
+}
+
+.login-header {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.input-login {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.button-login {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button-login:hover {
+    background-color: #caced3;
+}
+
+.button-login:active {
+    background-color: #adafb3;
+}
+
+.button-login i {
+    margin-left: 5px;
+}
+
+
+/* ----------------------------------------- */
 
 .register,
 .login,
@@ -89,13 +236,13 @@ login page CSS */
     align-items: center;
     justify-content: center;
     translate: 12vw;
+    box-shadow: 10px 20px 3px rgba(0, 0, 0, 0.2);
 }
 
-
-body {
-    background-color: #c9d6ff;
-    background: linear-gradient(to right, #e2e2e2, #c9d6ff);
-    height: 100vh;
+.login-header {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 20px;
 }
 
 .border-login {
@@ -108,7 +255,8 @@ body {
     padding: 10px;
     margin: 10px 0;
     border-radius: 10px;
-    border: 3px solid grey;
+    border: 3px solid black;
+    background-color: rgb(232, 240, 254);
 }
 
 h2 {
@@ -117,14 +265,24 @@ h2 {
 }
 
 .button-login {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
+	background: #fff;
+	font-size: 14px;
+	margin-top: 30px;
+	padding: 16px 20px;
+	border-radius: 26px;
+	border: 1px solid #D4D3E8;
+	text-transform: uppercase;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	width: 70%;
+	color: #4C489D;
+	box-shadow: 0px 2px 2px #5C5696;
+	cursor: pointer;
+	transition: .2s;
+    justify-content: center;
 }
+
 
 .hidden {
     display: none;
@@ -135,20 +293,56 @@ h2 {
     /* or 'block', depending on your layout requirements */
 }
 
-s
+
 
 /* -----------------------------------------
 toggle CSS */
-.register {
-    background-color: rgb(218, 166, 238);
+
+.button-toggle {
+    background: #fff;
+	font-size: 14px;
+	margin-top: 30px;
+	padding: 16px 20px;
+	border-radius: 26px;
+	border: 1px solid #D4D3E8;
+	text-transform: uppercase;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	color: #4C489D;
+	box-shadow: 0px 2px 2px #5C5696;
+	cursor: pointer;
+	transition: .2s;
+    justify-content: center;
+}
+
+.button-toggle:hover {
+    background-color: #d6dfdf; /* Slightly lighter teal on hover */
+    transform: translateY(-2px);
+}
+
+.button-toggle:active {
+    background-color: #c2c9c9; /* Darker teal on click */
+    transform: translateY(0);
+}
+
+#regDiv {
+    background-color: rgb(255, 255, 255);
 }
 
 .login {
-    background-color: rgb(231, 227, 170);
+    background-color: rgb(255, 255, 255);
+}
+
+.toggleSpan {
+    color: white;
+    font-weight: 900;
 }
 
 .toggle-container {
-    background-color: rgb(231, 148, 148);
+    background-color: #50c5fb;
+    background: linear-gradient(to bottom right, #50cdfd, #4fbcff);
     transform: translate(-100%);
     z-index: 100;
     transition: transform 0.5s;
@@ -170,10 +364,9 @@ toggle CSS */
 .reg {
     transition: opacity 0.5s;
     opacity: 0;
+
 }
 
 .reg.active {
     opacity: 1;
 }
-
-

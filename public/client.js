@@ -43,28 +43,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('appending room', (rooms) => {
         if (rooms.length !== 0) {
-            roomList.innerHTML = '';
+            roomList.innerHTML = ''; 
             rooms.forEach(room => {
                 const li = document.createElement('li');
-                const button = document.createElement('button');
-                li.textContent = room;
-                button.textContent = 'Join Room';
-                li.appendChild(button);
-                roomList.appendChild(li);
+                li.textContent = room; 
+                roomList.appendChild(li); 
+    
                 li.addEventListener('click', () => {
-                    socket.emit('join room', room);  //need to change
-                })
-            })
+                    socket.emit('join room', room); 
+                });
+            });
         }
-    }
-    );
-
-    socket.on('room joined', (room) => {
-        console.log('You have joined', room);
-        alert(`You have joined ${room}`);
+    });
+    
+    socket.on('room joined', (room, user) => {
         currentRoom = room;
+        if(user) {
+            room = user;
+        }
+        alert(`You have joined ${room}`);
         roomName.textContent = `Current Chatroom : ${currentRoom}`;
         messagesContainer.innerHTML = '';
+    });
+
+    socket.on('fetch messages', (messages) => {
+        messages.forEach(message => {
+            const item = document.createElement('div');
+            const usernameSpan = document.createElement('span');
+            usernameSpan.style.fontWeight = 'bold';
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = message.message;
+            messageSpan.style.display = 'inline';
+            item.classList.add('message-container');
+
+            if (message.sender_id === currentUser) {
+                item.style.alignSelf = 'flex-end'; 
+                usernameSpan.textContent = `You: `;
+            } else {
+                item.style.alignSelf = 'flex-start'; 
+                usernameSpan.textContent = `${message.sender_id}: `;
+            }
+            item.appendChild(usernameSpan);
+            item.appendChild(messageSpan);
+            if (messagesContainer.firstChild) {
+                messagesContainer.insertBefore(item, messagesContainer.firstChild);
+            } else {
+                messagesContainer.appendChild(item);
+            }
+        })
     });
 
     BtnReg.addEventListener('click', () => {
@@ -112,11 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(socket.rooms)
     })
 
+   
     ///////////////////////////////////////////////////////////////
     // debug only
-    setInterval(() => {
-        socket.emit('update room', currentUser);
-    }, 3000);
+    // setInterval(() => {
+    //     socket.emit('update room', currentUser);
+    // }, 3000);
 
     // -------------------------------------------------------
     //user registration: submit username to server
@@ -140,10 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.register) {
                     alert(`You are registered as ${username}!, please login to continue`);
                     BtnLoginToggle();
+                } else {
+                    alert('Username or email already exist, please try again');
                 }
             })
-            .catch(error => console.log(error))
-        console.log('submitted registration')
     });
     // --------------------------------------------------------
     //user login: submit username to server
@@ -168,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     socket.emit('update userCount');
                     socket.emit('authenticate', data.token);
                 } else {
-                    alert('Invalid username or password!!!');
+                    alert('Invalid username or password, please try again');
                 }
             })
     })
@@ -176,36 +203,37 @@ document.addEventListener('DOMContentLoaded', () => {
     //alert new user connection
 
     function updateUserSet(onlineUsers) {
-        userList.innerHTML = ''; //clear the list
-        onlineUsers.forEach(user => {
+        userList.innerHTML = ''; //clear the list\
+        const li = document.createElement('li');
+        li.textContent = currentUser;
+        userList.appendChild(li);
+        if(currentUser in onlineUsers) delete onlineUsers[currentUser];
+        Object.keys(onlineUsers).forEach(user => {
             addUser(user);
         })
     };
 
     function addUser(user) {
         const li = document.createElement('li');
-        const button = document.createElement('button');
-        button.textContent = 'Private Chat';
-        
-
-        li.appendChild(button);
         li.appendChild(document.createTextNode(user));
-    
         userList.appendChild(li);
         
-        button.addEventListener('click', () => {
-            alert(`You have joined ${user}`);
-            messagesContainer.innerHTML = '';
-            currentRoom = user;
-            roomName.textContent = `Current Chatroom : ${currentRoom}`;
+        li.addEventListener('click', () => {
+            let socketRoom = generateRoomName(currentUser, user);
+            console.log(socketRoom)
+            socket.emit('join room', socketRoom, user);
         });
     }
 
-
+    function generateRoomName(user1, user2) {
+       return [user1, user2].sort().join('_');
+    }
 
     socket.on('user count', (onlineUsers) => {
-        userCount.textContent = `Users online: ${onlineUsers.length}`;
+        setTimeout(() => {
+        userCount.textContent = `Users online: ${Object.keys(onlineUsers).length}`;
         updateUserSet(onlineUsers);
+        },1000);
     })
 
     socket.on('user connected', function (data) {
