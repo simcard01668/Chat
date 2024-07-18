@@ -21,11 +21,14 @@ body {
 }
 
 .firstCol{
-    min-width: 200px;;
+    
 }
 
 
-
+#chat {
+    overflow-y: scroll;
+    max-height: 70%;
+}
 
 
 
