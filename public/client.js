@@ -345,19 +345,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // send image function
 
     //send image client to server
-    document.getElementById('imageInput').addEventListener('change', function () {
-        if (this.files.length > 0) {
-            const file = this.files[0];
-            const reader = new FileReader();
+    // document.getElementById('imageInput').addEventListener('change', function () {
+    //     if (this.files.length > 0) {
+    //         const file = this.files[0];
+    //         const reader = new FileReader();
 
-            reader.onload = function (e) {
-                // Emit the image data to the server
-                socket.emit('send image', { image: e.target.result });
-            };
+    //         reader.onload = function (e) {
+    //             // Emit the image data to the server
+    //             socket.emit('send image', { image: e.target.result });
+    //         };
 
-            reader.readAsDataURL(file);
-        }
-    });
+    //         reader.readAsDataURL(file);
+    //     }
+    // });
 
     //send image: receiving from server and appending to chat
     socket.on('receive image', function (imageSrc, username) {
