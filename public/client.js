@@ -1,4 +1,5 @@
 import { messageForm, messageInput, messagesContainer, clearBtn, chatWindow, usernameInput, userReg, userList, namePlace, imageInput, currentUser } from './config/config.js'
+import { EmojiButton } from 'https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------
@@ -22,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const publicRoom = document.getElementById('publicRoom');
     const createRoom = document.getElementById('createRoom');
     const roomList = document.getElementById('roomList');
+    const emojiButton = document.getElementById('emojiBtn');
+    const picker = new EmojiButton();
     // --------------------------------------------------------
     let currentRoom = 'Public';
     let currentUser;
@@ -43,22 +46,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('appending room', (rooms) => {
         if (rooms.length !== 0) {
-            roomList.innerHTML = ''; 
+            roomList.innerHTML = '';
             rooms.forEach(room => {
                 const li = document.createElement('li');
-                li.textContent = room; 
-                roomList.appendChild(li); 
-    
+                li.textContent = room;
+                roomList.appendChild(li);
+
                 li.addEventListener('click', () => {
-                    socket.emit('join room', room); 
+                    socket.emit('join room', room);
                 });
             });
         }
     });
-    
+
     socket.on('room joined', (room, user) => {
         currentRoom = room;
-        if(user) {
+        if (user) {
             room = user;
         }
         alert(`You have joined ${room}`);
@@ -69,22 +72,36 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('fetch messages', (messages) => {
         messages.forEach(message => {
             const item = document.createElement('div');
-            const usernameSpan = document.createElement('span');
-            usernameSpan.style.fontWeight = 'bold';
-            const messageSpan = document.createElement('span');
-            messageSpan.textContent = message.message;
-            messageSpan.style.display = 'inline';
             item.classList.add('message-container');
 
+            const usernameDiv = document.createElement('div');
+            usernameDiv.style.fontWeight = 'bold';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message.message;
+            messageDiv.style.display = 'inline';
+
+            const timestamp = new Date(message.timestamp);
+            timestamp.setHours(timestamp.getHours() + 8);
+            const dateString = timestamp.toLocaleDateString('en-US', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+            });
+        
+            const timeDiv = document.createElement('div');
+            timeDiv.textContent = `${dateString} (UTC+8)`;
+            timeDiv.style.fontSize = "0.7rem";
+
             if (message.sender_id === currentUser) {
-                item.style.alignSelf = 'flex-end'; 
-                usernameSpan.textContent = `You: `;
+                item.style.alignSelf = 'flex-end';
+                usernameDiv.textContent = `You: `;
             } else {
-                item.style.alignSelf = 'flex-start'; 
-                usernameSpan.textContent = `${message.sender_id}: `;
+                item.style.alignSelf = 'flex-start';
+                usernameDiv.textContent = `${message.sender_id}: `;
             }
-            item.appendChild(usernameSpan);
-            item.appendChild(messageSpan);
+            item.appendChild(usernameDiv);
+            item.appendChild(messageDiv);
+            item.appendChild(timeDiv);
             if (messagesContainer.firstChild) {
                 messagesContainer.insertBefore(item, messagesContainer.firstChild);
             } else {
@@ -119,6 +136,17 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     });
 
+
+
+    picker.on('emoji', emoji => {
+        const input = document.querySelector('#message');
+        input.value += emoji;
+    });
+
+    emojiButton.addEventListener('click', () => {
+        picker.togglePicker(emojiButton);
+    });
+
     // --------------------------------------------------------
     //user authentication auto login
     socket.on('authentication', () => {
@@ -138,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(socket.rooms)
     })
 
-   
+
     ///////////////////////////////////////////////////////////////
     // debug only
     // setInterval(() => {
@@ -207,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const li = document.createElement('li');
         li.textContent = currentUser;
         userList.appendChild(li);
-        if(currentUser in onlineUsers) delete onlineUsers[currentUser];
+        if (currentUser in onlineUsers) delete onlineUsers[currentUser];
         Object.keys(onlineUsers).forEach(user => {
             addUser(user);
         })
@@ -217,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const li = document.createElement('li');
         li.appendChild(document.createTextNode(user));
         userList.appendChild(li);
-        
+
         li.addEventListener('click', () => {
             let socketRoom = generateRoomName(currentUser, user);
             console.log(socketRoom)
@@ -225,15 +253,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    //generate a room name for private chatting
     function generateRoomName(user1, user2) {
-       return [user1, user2].sort().join('_');
+        return [user1, user2].sort().join('_');
     }
 
     socket.on('user count', (onlineUsers) => {
         setTimeout(() => {
-        userCount.textContent = `Users online: ${Object.keys(onlineUsers).length}`;
-        updateUserSet(onlineUsers);
-        },1000);
+            userCount.textContent = `Users online: ${Object.keys(onlineUsers).length}`;
+            updateUserSet(onlineUsers);
+        }, 1000);
     })
 
     socket.on('user connected', function (data) {
@@ -309,24 +338,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //listen to message from server and appending to chat
     socket.on('received message', function (data) {
+        // const timeStr = new Date(data.timestamp).toLocaleTimeString();
         const item = document.createElement('div');
-        const usernameSpan = document.createElement('span');
-        usernameSpan.style.fontWeight = 'bold';
-        const messageSpan = document.createElement('span');
-        messageSpan.textContent = data.message;
-        messageSpan.style.display = 'inline';
         item.classList.add('message-container');
+
+        const usernameDiv = document.createElement('div');
+        usernameDiv.style.fontWeight = 'bold';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = data.message;
+        messageDiv.style.display = 'inline';
+
+        const timestamp = new Date(data.timestamp);
+        timestamp.setHours(timestamp.getHours() + 8);
+        const dateString = timestamp.toLocaleDateString('en-US', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+            });
+
+        const timeDiv = document.createElement('div');
+        timeDiv.textContent = `${dateString} (UTC+8)`;
+        timeDiv.style.fontSize = "0.7rem";
 
         if (data.username === currentUser) {
             item.style.alignSelf = 'flex-end'; // Moves self messages to the right
-            usernameSpan.textContent = `You: `;
+            usernameDiv.textContent = `You: `;
         } else {
             item.style.alignSelf = 'flex-start'; // Keeps other messages on the left
-            usernameSpan.textContent = `${data.username}: `;
+            usernameDiv.textContent = `${data.username}: `;
 
         }
-        item.appendChild(usernameSpan);
-        item.appendChild(messageSpan);
+
+        item.appendChild(usernameDiv);
+        item.appendChild(messageDiv);
+        item.appendChild(timeDiv);
         // socket.emit('userTyping', { username: currentUser, isTyping: false });
         if (messagesContainer.firstChild) {
             messagesContainer.insertBefore(item, messagesContainer.firstChild);

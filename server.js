@@ -140,11 +140,9 @@ io.on('connection', (socket) => {
         if (socket.username || onlineUsers.includes(socket.username)) {
             const messageData = {
                 username: socket.username,
-                message: msg
+                message: msg,
+                timestamp: new Date()
             };
-            // if(currentRoom in onlineUsers) {
-            // currentRoom = onlineUsers[currentRoom].socket_id;
-            // };
             io.to(currentRoom).emit('received message', { ...messageData });
             console.log(currentRoom)
         } else {

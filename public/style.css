@@ -1,55 +1,3 @@
-.container-border {
-    border: 2px solid rgb(0, 0, 0);
-}
-
-#chatPage {
-    overflow: hidden; /* Prevent content from wrapping and hide overflow */
-    white-space: nowrap; /* Prevent wrapping within flex items */
-}
-
-html,
-body {
-    height: 100%;
-    /* Ensures that the HTML and body take full height of the viewport */
-    margin: 0;
-    /* Removes default margin */
-}
-
-#roomName {
-    font-size: 2rem;
-    font-weight: 900;
-}
-
-.chat-div {
-    height: 50vh;
-}
-
-
-#chat {
-    overflow-y: scroll;
-    max-height: 70%;
-}
-
-
-
-
-
-.full-height {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    height: 100%;
-}
-
-.middle-container {
-    height: 71vh;
-    overflow: auto;
-}
-
-#message {
-    width: 60%;
-}
-
 #imageInput {
     display: none;
 }
@@ -60,10 +8,12 @@ body {
     height: 100%;
     overflow-wrap: break-word;
     overflow: wrap;
+    overflow-y: scroll;
+    width: 100%;
 }
 
 .message-container {
-    background-color: white;
+    background-color: #4d426d;
     border-radius: 10px;
     border: 1px solid black;
     padding: 5px;
@@ -73,29 +23,185 @@ body {
     min-width: 10%;
 }
 
+html,
+body {
+    height: 100%;
+    margin: 0;
+
+}
+
+.header {
+    height: 6.815vh;
+    /* 2/11 of the total height */
+}
+
+.title-span{
+    font-weight: 900;
+    color: white;
+    margin-bottom: 0px;
+}
+
+.title-div, .user-profile-div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.footer {
+    height: 13.63vh;
+}
+
+.content {
+    height: 70.545vh;
+    /* 7/11 of the total height */
+    overflow-y: auto;
+}
+
+.title-div,
+.channel-div,
+.message-div,
+.user-profile-div,
+.input-div {
+    border: 1px solid #ccc;
+    padding: 15px;
+    background-color: #5d4f88;
+    border-radius: 20px;
+    color: white;
+}
+
+#roomName {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+
+}
+
+.list-div {
+    background-color: #4d426d;
+    color: white;
+}
+
+#userList li::marker {
+    color: rgb(160, 216, 160);
+    font-size: 1.5rem;
+}
+
+.title-div,
+.list-div,
+.user-profile-div {
+    flex: 0 0 2fr;
+}
+
+.channel-div,
+.message-div,
+.input-div {
+    flex: 0 0 10fr;
+}
+
+
+#main-div,
+#top-div,
+#bottom-div,
+#middle-div {
+    gap: 10px;
+}
+
+#list-div {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+}
+
+.user-div,
+.aside-channel-div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    align-items: center;
+    background-color: #5d4f88;
+    border-radius: 20px;
+}
 
 
 
+#middle-div {
+    overflow: visible;
+}
+
+#message {
+    height: 40px;
+    border-radius: 20px;
+    width: 100%;
+}
 
 
+#emojiBtn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    margin-right: 10px;
+    padding: 0;
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: transparent;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
+#msgBtn {
+    background-color: #3cc6b7;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border: none;
+}
 
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
 
+.input-wrap input[type="text"] {
+    width: 100%;
+    padding-right: 50px;
+    /* Adjust padding to make space for both buttons */
+    padding-left: 50px
+}
 
+#logOut {
+    background-color: #304786;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    cursor: pointer;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
@@ -149,10 +255,17 @@ login page CSS */
     height: 100vh;
     width: auto;
     flex-direction: row;
-
-
 }
 
+.register {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+    height: 100%;
+    background-color: #4d426d;
+}
 
 
 
@@ -160,7 +273,8 @@ login page CSS */
 /* ------------------------------------ */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
+    background-color: #4d426d;
+    ;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -177,14 +291,30 @@ body {
     width: 300px;
 }
 
-.login-main {
-    text-align: center;
+.userLogin,
+.login-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#LoginForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .login-header {
     font-size: 16px;
-    margin-bottom: 20px;
+    text-align: center;
     color: #333;
+}
+
+.toggleSpan {
+    text-align: center;
 }
 
 .input-login {
@@ -222,6 +352,13 @@ body {
     margin-left: 5px;
 }
 
+#userReg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
 
 /* ----------------------------------------- */
 
@@ -245,7 +382,6 @@ body {
 .login-header {
     font-size: 2rem;
     font-weight: 900;
-    margin-bottom: 20px;
 }
 
 .border-login {
@@ -267,22 +403,28 @@ h2 {
     font-family: 'roboto', sans-serif;
 }
 
+#RegisterForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
 .button-login {
-	background: #fff;
-	font-size: 14px;
-	margin-top: 30px;
-	padding: 16px 20px;
-	border-radius: 26px;
-	border: 1px solid #D4D3E8;
-	text-transform: uppercase;
-	font-weight: 700;
-	display: flex;
-	align-items: center;
-	width: 70%;
-	color: #4C489D;
-	box-shadow: 0px 2px 2px #5C5696;
-	cursor: pointer;
-	transition: .2s;
+    background: #fff;
+    font-size: 14px;
+    border-radius: 26px;
+    border: 1px solid #D4D3E8;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    width: 70%;
+    color: #4C489D;
+    box-shadow: 0px 2px 2px #5C5696;
+    cursor: pointer;
+    transition: .2s;
     justify-content: center;
 }
 
@@ -303,30 +445,32 @@ toggle CSS */
 
 .button-toggle {
     background: #fff;
-	font-size: 14px;
-	margin-top: 30px;
-	padding: 16px 20px;
-	border-radius: 26px;
-	border: 1px solid #D4D3E8;
-	text-transform: uppercase;
-	font-weight: 700;
-	display: flex;
-	align-items: center;
-	width: 100%;
-	color: #4C489D;
-	box-shadow: 0px 2px 2px #5C5696;
-	cursor: pointer;
-	transition: .2s;
+    font-size: 14px;
+    margin-top: 30px;
+    padding: 16px 20px;
+    border-radius: 26px;
+    border: 1px solid #D4D3E8;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    color: #4C489D;
+    box-shadow: 0px 2px 2px #5C5696;
+    cursor: pointer;
+    transition: .2s;
     justify-content: center;
 }
 
 .button-toggle:hover {
-    background-color: #d6dfdf; /* Slightly lighter teal on hover */
+    background-color: #d6dfdf;
+    /* Slightly lighter teal on hover */
     transform: translateY(-2px);
 }
 
 .button-toggle:active {
-    background-color: #c2c9c9; /* Darker teal on click */
+    background-color: #c2c9c9;
+    /* Darker teal on click */
     transform: translateY(0);
 }
 
@@ -344,8 +488,8 @@ toggle CSS */
 }
 
 .toggle-container {
-    background-color: #50c5fb;
-    background: linear-gradient(to bottom right, #50cdfd, #4fbcff);
+    background-color: #5c4f82;
+    background: linear-gradient(to bottom right, #776b9e, #51486b);
     transform: translate(-100%);
     z-index: 100;
     transition: transform 0.5s;
