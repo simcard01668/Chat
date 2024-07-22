@@ -177,16 +177,10 @@ io.on('connection', (socket) => {
 
     })
     // -------------------------------------------------------------
-    // room function
-
-
-
-
-    // -------------------------------------------------------------
-    //Typing function
-    // socket.on('userTyping', (data) => {
-    //     io.emit('typing', data);
-    // });
+    // Typing function
+    socket.on('userTyping', (data) => {
+        io.emit('typing', data);
+    });
 
     // -------------------------------------------------------------
     //send photo function

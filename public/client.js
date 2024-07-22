@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const publicRoom = document.getElementById('publicRoom');
     const createRoom = document.getElementById('createRoom');
     const roomList = document.getElementById('roomList');
-    const emojiButton = document.getElementById('emojiBtn');
+    const emoButton = document.getElementById('emojiBtn');
+    const input = document.querySelector('#message');
     const picker = new EmojiButton();
     // --------------------------------------------------------
     let currentRoom = 'Public';
@@ -87,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 year: 'numeric', month: '2-digit', day: '2-digit',
                 hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
             });
-        
+
             const timeDiv = document.createElement('div');
             timeDiv.textContent = `${dateString} (UTC+8)`;
             timeDiv.style.fontSize = "0.7rem";
@@ -137,14 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-
-    picker.on('emoji', emoji => {
-        const input = document.querySelector('#message');
-        input.value += emoji;
+    // --------------------------------------------------------
+    //emoji picker
+    picker.on('emoji', selection => {
+        console.log(selection);
+        input.value += selection.emoji;
     });
 
-    emojiButton.addEventListener('click', () => {
-        picker.togglePicker(emojiButton);
+    emoButton.addEventListener('click', () => {
+        picker.togglePicker(emoButton);
     });
 
     // --------------------------------------------------------
@@ -338,7 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //listen to message from server and appending to chat
     socket.on('received message', function (data) {
-        // const timeStr = new Date(data.timestamp).toLocaleTimeString();
         const item = document.createElement('div');
         item.classList.add('message-container');
 
@@ -352,19 +353,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const timestamp = new Date(data.timestamp);
         timestamp.setHours(timestamp.getHours() + 8);
         const dateString = timestamp.toLocaleDateString('en-US', {
-                year: 'numeric', month: '2-digit', day: '2-digit',
-                hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-            });
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+        });
 
         const timeDiv = document.createElement('div');
         timeDiv.textContent = `${dateString} (UTC+8)`;
         timeDiv.style.fontSize = "0.7rem";
 
         if (data.username === currentUser) {
-            item.style.alignSelf = 'flex-end'; // Moves self messages to the right
+            item.style.alignSelf = 'flex-end'; 
             usernameDiv.textContent = `You: `;
         } else {
-            item.style.alignSelf = 'flex-start'; // Keeps other messages on the left
+            item.style.alignSelf = 'flex-start';
             usernameDiv.textContent = `${data.username}: `;
 
         }
@@ -386,23 +387,21 @@ document.addEventListener('DOMContentLoaded', () => {
         loginPage.classList.remove('hidden');
     })
 
-    // ------------------------------------------------------
-    // send image function
+    // ------------------------------------------------------   
+    // send image client to server
+    document.getElementById('imageInput').addEventListener('change', function () {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            const reader = new FileReader();
 
-    //send image client to server
-    // document.getElementById('imageInput').addEventListener('change', function () {
-    //     if (this.files.length > 0) {
-    //         const file = this.files[0];
-    //         const reader = new FileReader();
+            reader.onload = function (e) {
+                // Emit the image data to the server
+                socket.emit('send image', { image: e.target.result });
+            };
 
-    //         reader.onload = function (e) {
-    //             // Emit the image data to the server
-    //             socket.emit('send image', { image: e.target.result });
-    //         };
-
-    //         reader.readAsDataURL(file);
-    //     }
-    // });
+            reader.readAsDataURL(file);
+        }
+    });
 
     //send image: receiving from server and appending to chat
     socket.on('receive image', function (imageSrc, username) {
@@ -426,25 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesContainer.innerHTML = ''; // Clear the chat container
     });
 
-
-    // -------------------------------------------------------------------------
-    // user registration: update active user
-    // socket.on('update user list', function (users) {
-    //     userList.innerHTML = ''; //clear the list
-    //     users.forEach(user => {
-    //         const li = document.createElement('li');
-    //         const span = document.createElement('span');
-    //         li.appendChild(span);
-    //         span.textContent = user;
-    //         userList.appendChild(li);
-    //     })
-
-    // })
-
-
     // ------------------------------------------------------------------------------
-    // typing event function
-
     //sending typing event to server
     let typingTimer;
     const typingInterval = 3000;
