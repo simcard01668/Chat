@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 const { type } = require('os');
 const SECRET_KEY = '123456789';
 const app = express();
+const multer = require('multer'); //allow file upload
 const server = http.createServer(app);
 const io = socketIo(server, {
     maxHttpBufferSize: 1e7, // Set max HTTP buffer size to 1MB
@@ -18,6 +19,24 @@ const io = socketIo(server, {
         credentials: true
     }
 });
+
+// -------------------------------------------------------------
+//Multer configuration
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.originalname);
+    },
+});
+
+const upload = multer({ storage });
+
+app.post('/upload' ,upload.single('file'), (req, res) => {
+    res.json(req.file );
+});
+
 
 instrument(io, {
     auth: false,
