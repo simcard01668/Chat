@@ -3,13 +3,25 @@ const http = require('http');
 const socketIo = require('socket.io');
 const { instrument } = require("@socket.io/admin-ui");
 const path = require('path');
-const pool = require('./database.js');
+
+//AWS RDS database connection
+require('dotenv').config();
+const mysql2 = require('mysql2/promise')
+
+const pool = mysql2.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
+})
+
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(32).toString('hex');
 const jwt = require('jsonwebtoken');
 const { type } = require('os');
 const SECRET_KEY = '123456789';
 const app = express();
+const AWS = require('aws-sdk');
 const multer = require('multer'); //allow file upload
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -46,10 +58,6 @@ instrument(io, {
 //User name registration
 let onlineUsers = {};
 let rooms = [];
-
-// setInterval(() => {
-// console.log(onlineUsers);
-// },2000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -180,9 +188,6 @@ io.on('connection', (socket) => {
         }
     }
     );
-
-
-
 
     // -------------------------------------------------------------
     //handle disconnection event
