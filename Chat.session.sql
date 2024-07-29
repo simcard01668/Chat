@@ -1,5 +1,6 @@
 -- @block
 -- SELECT * FROM users;
+-- SELECT * FROM messages;
 
 -- CREATE TABLE users (
 --     id Integer PRIMARY KEY AUTO_INCREMENT,

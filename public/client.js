@@ -26,12 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const emoButton = document.getElementById('emojiBtn');
     const input = document.querySelector('#message');
     const picker = new EmojiButton();
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message'); 
+    const messagesContainer = document.getElementById('chat'); 
+    const clearBtn = document.getElementById('clear'); 
+    const chatWindow = document.getElementById('chatWindow');
+    const userReg = document.getElementById('userReg');
+    const userList = document.getElementById('userList');
+    const namePlace = document.getElementById('namePlace');
+    const imageInput = document.getElementById('imageInput');
     // --------------------------------------------------------
     let currentRoom = 'Public';
     let currentUser;
     roomName.textContent = `Current Chatroom : ${currentRoom}`;
-
-
     // -----------------------------------------------------------
     //button interaction
     publicRoom.addEventListener('click', () => {

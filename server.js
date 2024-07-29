@@ -3,13 +3,26 @@ const http = require('http');
 const socketIo = require('socket.io');
 const { instrument } = require("@socket.io/admin-ui");
 const path = require('path');
-const pool = require('./database.js');
+
+//AWS RDS database connection
+require('dotenv').config();
+const mysql2 = require('mysql2/promise')
+
+const pool = mysql2.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
+})
+
 const crypto = require('crypto');
 const secretKey = crypto.randomBytes(32).toString('hex');
 const jwt = require('jsonwebtoken');
 const { type } = require('os');
 const SECRET_KEY = '123456789';
 const app = express();
+const AWS = require('aws-sdk');
+const multer = require('multer'); //allow file upload
 const server = http.createServer(app);
 const io = socketIo(server, {
     maxHttpBufferSize: 1e7, // Set max HTTP buffer size to 1MB
@@ -19,6 +32,24 @@ const io = socketIo(server, {
     }
 });
 
+// -------------------------------------------------------------
+//Multer configuration
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.originalname);
+    },
+});
+
+const upload = multer({ storage });
+
+app.post('/upload' ,upload.single('file'), (req, res) => {
+    res.json(req.file );
+});
+
+
 instrument(io, {
     auth: false,
     mode: 'development'
@@ -27,10 +58,6 @@ instrument(io, {
 //User name registration
 let onlineUsers = {};
 let rooms = [];
-
-// setInterval(() => {
-// console.log(onlineUsers);
-// },2000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -161,9 +188,6 @@ io.on('connection', (socket) => {
         }
     }
     );
-
-
-
 
     // -------------------------------------------------------------
     //handle disconnection event
