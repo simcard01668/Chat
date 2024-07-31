@@ -1,8 +1,10 @@
 const express = require('express');
+const https = require('https');
 const http = require('http');
 const socketIo = require('socket.io');
 const { instrument } = require("@socket.io/admin-ui");
 const path = require('path');
+const fs = require('fs');
 
 //AWS RDS database connection
 require('dotenv').config();
@@ -23,7 +25,31 @@ const SECRET_KEY = '123456789';
 const app = express();
 const AWS = require('aws-sdk');
 const multer = require('multer'); //allow file upload
-const server = http.createServer(app);
+
+// -------------------------------------------------------------
+//SSL certificate configuration for development environment
+const isHttps = process.env.USE_HTTPS === 'true';
+
+let server;
+if (isHttps) {
+    // Try to load SSL certificates
+    let options;
+    try {
+        options = {
+            key: fs.readFileSync('ssl/localhost.key'),
+            cert: fs.readFileSync('ssl/localhost.crt')
+        };
+    } catch (err) {
+        console.error('Error loading SSL certificates:', err);
+        process.exit(1); // Exit if SSL certificates are required but not available
+    }
+    server = https.createServer(options, app);
+} else {
+    server = http.createServer(app);
+}
+
+
+
 const io = socketIo(server, {
     maxHttpBufferSize: 1e7, // Set max HTTP buffer size to 1MB
     cors: {
@@ -35,18 +61,18 @@ const io = socketIo(server, {
 // -------------------------------------------------------------
 //Multer configuration
 const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: function (req, file, cb) {
         cb(null, 'uploads/');
     },
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         cb(null, file.originalname);
     },
 });
 
 const upload = multer({ storage });
 
-app.post('/upload' ,upload.single('file'), (req, res) => {
-    res.json(req.file );
+app.post('/upload', upload.single('file'), (req, res) => {
+    res.json(req.file);
 });
 
 
@@ -72,7 +98,7 @@ app.post('/register', async (req, res) => {
         await pool.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email])
         res.status(201).json({ register: true });
     } catch (error) {
-        if(error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 'ER_DUP_ENTRY') {
             res.status(409).json({ error: 'Username already exists' });
         } else {
             res.status(500).json({ error: 'Error registering user' });
@@ -182,7 +208,7 @@ io.on('connection', (socket) => {
         const status = 'unread'
 
         try {
-            await pool.query('INSERT INTO messages (room_id, sender_id, message, status) VALUES (?, ?, ?, ?)', [room_id, sender_id, message,  status])
+            await pool.query('INSERT INTO messages (room_id, sender_id, message, status) VALUES (?, ?, ?, ?)', [room_id, sender_id, message, status])
         } catch (error) {
             console.log(error)
         }
@@ -231,7 +257,7 @@ io.on('connection', (socket) => {
 //start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on https://localhost:${PORT}`);
 })
 
 
