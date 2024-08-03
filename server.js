@@ -28,7 +28,7 @@ const multer = require('multer'); //allow file upload
 
 // -------------------------------------------------------------
 //SSL certificate configuration for development environment
-const isHttps = process.env.USE_HTTPS === 'true';
+const isHttps = process.env.USE_HTTPS === 'false';
 
 let server;
 if (isHttps) {
