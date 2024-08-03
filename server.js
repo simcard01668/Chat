@@ -28,21 +28,10 @@ const multer = require('multer'); //allow file upload
 
 // -------------------------------------------------------------
 //SSL certificate configuration for development environment
-const isHttps = process.env.USE_HTTPS === 'true';
+const isHttps = process.env.USE_HTTPS === 'false';
 
 let server;
 if (isHttps) {
-    // Try to load SSL certificates
-    let options;
-    try {
-        options = {
-            key: fs.readFileSync('ssl/localhost.key'),
-            cert: fs.readFileSync('ssl/localhost.crt')
-        };
-    } catch (err) {
-        console.error('Error loading SSL certificates:', err);
-        process.exit(1); // Exit if SSL certificates are required but not available
-    }
     server = https.createServer(options, app);
 } else {
     server = http.createServer(app);
