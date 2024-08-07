@@ -76,19 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesContainer.innerHTML = '';
     });
 
-    socket.on('fetch messages', (messages) => {
-        messages.forEach(message => {
-            const item = document.createElement('div');
+    function createMessagesContainer(data){
+        const item = document.createElement('div');
             item.classList.add('message-container');
 
             const usernameDiv = document.createElement('div');
             usernameDiv.style.fontWeight = 'bold';
 
             const messageDiv = document.createElement('div');
-            messageDiv.textContent = message.message;
+            messageDiv.textContent = data.message;
             messageDiv.style.display = 'inline';
 
-            const timestamp = new Date(message.timestamp);
+            const timestamp = new Date(data.timestamp);
             timestamp.setHours(timestamp.getHours() + 8);
             const dateString = timestamp.toLocaleDateString('en-US', {
                 year: 'numeric', month: '2-digit', day: '2-digit',
@@ -99,12 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
             timeDiv.textContent = `${dateString} (UTC+8)`;
             timeDiv.style.fontSize = "0.7rem";
 
-            if (message.sender_id === currentUser) {
+            if (data.sender_id === currentUser) {
                 item.style.alignSelf = 'flex-end';
                 usernameDiv.textContent = `You: `;
             } else {
                 item.style.alignSelf = 'flex-start';
-                usernameDiv.textContent = `${message.sender_id}: `;
+                usernameDiv.textContent = `${data.sender_id}: `;
             }
             item.appendChild(usernameDiv);
             item.appendChild(messageDiv);
@@ -114,6 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 messagesContainer.appendChild(item);
             }
+    }
+
+    socket.on('fetch messages', (messages) => {
+        messages.forEach(message => {
+            createMessagesContainer(message);
         })
     });
 
@@ -346,45 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //listen to message from server and appending to chat
     socket.on('received message', function (data) {
-        const item = document.createElement('div');
-        item.classList.add('message-container');
-
-        const usernameDiv = document.createElement('div');
-        usernameDiv.style.fontWeight = 'bold';
-
-        const messageDiv = document.createElement('div');
-        messageDiv.textContent = data.message;
-        messageDiv.style.display = 'inline';
-
-        const timestamp = new Date(data.timestamp);
-        timestamp.setHours(timestamp.getHours() + 8);
-        const dateString = timestamp.toLocaleDateString('en-US', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-        });
-
-        const timeDiv = document.createElement('div');
-        timeDiv.textContent = `${dateString} (UTC+8)`;
-        timeDiv.style.fontSize = "0.7rem";
-
-        if (data.username === currentUser) {
-            item.style.alignSelf = 'flex-end'; 
-            usernameDiv.textContent = `You: `;
-        } else {
-            item.style.alignSelf = 'flex-start';
-            usernameDiv.textContent = `${data.username}: `;
-
-        }
-
-        item.appendChild(usernameDiv);
-        item.appendChild(messageDiv);
-        item.appendChild(timeDiv);
-        // socket.emit('userTyping', { username: currentUser, isTyping: false });
-        if (messagesContainer.firstChild) {
-            messagesContainer.insertBefore(item, messagesContainer.firstChild);
-        } else {
-            messagesContainer.appendChild(item);
-        }
+        createMessagesContainer(data);
     });
 
     //reject message if not logged in
